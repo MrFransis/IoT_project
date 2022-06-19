@@ -1,0 +1,5 @@
+mosquitto_sub -h "fd00::1" -t status
+
+mosquitto_pub -h fd00::1 -t actuator -m "aaa"
+
+less /var/log/mosquitto/mosquitto.log

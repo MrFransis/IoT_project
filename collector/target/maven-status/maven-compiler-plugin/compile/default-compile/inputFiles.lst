@@ -1,0 +1,8 @@
+/home/osboxes/contiki-ng/examples/IoT_project/collector/src/main/java/it/unipi/dii/iot/smartgenerator/utils/Utils.java
+/home/osboxes/contiki-ng/examples/IoT_project/collector/src/main/java/it/unipi/dii/iot/smartgenerator/mqtt/MqttCollector.java
+/home/osboxes/contiki-ng/examples/IoT_project/collector/src/main/java/it/unipi/dii/iot/smartgenerator/coap/CoapCollector.java
+/home/osboxes/contiki-ng/examples/IoT_project/collector/src/main/java/it/unipi/dii/iot/smartgenerator/persistence/MysqlDriver.java
+/home/osboxes/contiki-ng/examples/IoT_project/collector/src/main/java/it/unipi/dii/iot/smartgenerator/persistence/MysqlManager.java
+/home/osboxes/contiki-ng/examples/IoT_project/collector/src/main/java/it/unipi/dii/iot/smartgenerator/Collector.java
+/home/osboxes/contiki-ng/examples/IoT_project/collector/src/main/java/it/unipi/dii/iot/smartgenerator/utils/Message.java
+/home/osboxes/contiki-ng/examples/IoT_project/collector/src/main/java/it/unipi/dii/iot/smartgenerator/utils/Sensor.java

@@ -1,9 +1,0 @@
-it/unipi/dii/iot/smartgenerator/coap/CoapCollector$1.class
-it/unipi/dii/iot/smartgenerator/mqtt/MqttCollector.class
-it/unipi/dii/iot/smartgenerator/Collector.class
-it/unipi/dii/iot/smartgenerator/coap/CoapCollector.class
-it/unipi/dii/iot/smartgenerator/utils/Utils.class
-it/unipi/dii/iot/smartgenerator/utils/Message.class
-it/unipi/dii/iot/smartgenerator/persistence/MysqlDriver.class
-it/unipi/dii/iot/smartgenerator/persistence/MysqlManager.class
-it/unipi/dii/iot/smartgenerator/utils/Sensor.class

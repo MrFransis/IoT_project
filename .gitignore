@@ -7,3 +7,4 @@ nodes/mqtt-node/build/
 nodes/mqtt-node/mqtt-client.cooja
 rpl-border-router/build
 rpl-border-router/border-router.cooja
+collector/JavaCollecotr-tcp1270011883/.lck

@@ -11,6 +11,8 @@
 #include "dev/leds.h"
 #include "os/sys/log.h"
 #include "mqtt-client.h"
+#include "../sensors/temperature.h"
+#include "../sensors/utils.h"
 
 #include <string.h>
 #include <strings.h>
@@ -32,9 +34,7 @@ static const char *broker_ip = MQTT_CLIENT_BROKER_IP_ADDR;
 #define DEFAULT_BROKER_PORT         1883
 #define DEFAULT_PUBLISH_INTERVAL    (30 * CLOCK_SECOND)
 
-
 // We assume that the broker does not require authentication
-
 
 /*---------------------------------------------------------------------------*/
 /* Various states */
@@ -50,8 +50,8 @@ static uint8_t state;
 /*---------------------------------------------------------------------------*/
 PROCESS_NAME(mqtt_client_process);
 AUTOSTART_PROCESSES(&mqtt_client_process);
-
 /*---------------------------------------------------------------------------*/
+
 /* Maximum TCP segment size for outgoing segments of our socket */
 #define MAX_TCP_SEGMENT_SIZE    32
 #define CONFIG_IP_ADDR_STR_LEN   64
@@ -66,7 +66,7 @@ static char broker_address[CONFIG_IP_ADDR_STR_LEN];
 #define BUFFER_SIZE 64
 
 static char client_id[BUFFER_SIZE];
-static char pub_topic[BUFFER_SIZE];
+//static char pub_topic[BUFFER_SIZE];
 static char sub_topic[BUFFER_SIZE];
 
 // Periodic timer to check the state of the MQTT client
@@ -88,8 +88,6 @@ static struct mqtt_connection conn;
 /*---------------------------------------------------------------------------*/
 PROCESS(mqtt_client_process, "MQTT Client");
 
-
-
 /*---------------------------------------------------------------------------*/
 static void
 pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
@@ -106,18 +104,20 @@ pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
   }
 }
 /*---------------------------------------------------------------------------*/
-static void
-sensors_emulation(void)
+static void 
+publish(char* pub_topic, int sample)
 {
-  //Engine temperature sensor
-  sprintf(pub_topic, "%s", "temperature");
-	int machineid = 1;
-  int engine_temp = (rand() % (80 - 10 + 1)) + 10;
-
-  sprintf(app_buffer,"{\"n\":\"temperature\",\"v\":\"%d\",\"u\":\"cell\",\"id\":\"%d\"}",engine_temp,machineid);
-  printf("%s \n",app_buffer);
+  json_sample(app_buffer, APP_BUFFER_SIZE, "temperature", sample, (int) client_id);
   mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer, strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
+}
 
+static void 
+sensors_emulation(process_event_t event, int sample)
+{
+  //Engine temperature 
+  if(event == TEMPERATURE_SAMPLE_EVENT){
+    publish("temperature", sample);
+  }
   //Motor RPM sensor
 
   //Fuel level sensor
@@ -216,7 +216,6 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
   while(1) {
 
     PROCESS_YIELD();
-
     if((ev == PROCESS_EVENT_TIMER && data == &periodic_timer) || 
 	      ev == PROCESS_EVENT_POLL){
 			  			  
@@ -238,7 +237,10 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 		  }
 		  
 		  if(state==STATE_CONNECTED){
-		  
+        //start sensors
+        process_start(&temperature_sensor_process, NULL);
+        process_post(&temperature_sensor_process, TEMPERATURE_EVENT_SUB, &mqtt_client_process);
+        
 			  // Subscribe to a topic
 			  strcpy(sub_topic,"temperture");
 
@@ -251,21 +253,18 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 			  }
 			  
 			  state = STATE_SUBSCRIBED;
-		  }
-
-			  
-		if(state == STATE_SUBSCRIBED){
-			// Publish something
-		  sensors_emulation();
-		
-		} else if ( state == STATE_DISCONNECTED ){
-		   LOG_ERR("Disconnected form MQTT broker\n");	
-		   // Recover from error
-		}
-		
-		etimer_set(&periodic_timer, STATE_MACHINE_PERIODIC);
+		  }else if ( state == STATE_DISCONNECTED ){
+        LOG_ERR("Disconnected form MQTT broker\n");	
+        // Recover from error
+      }
+      
+      etimer_set(&periodic_timer, STATE_MACHINE_PERIODIC);
       
     }
+    if(ev == TEMPERATURE_SAMPLE_EVENT && state == STATE_SUBSCRIBED){
+        // Publish something
+        sensors_emulation(ev, *((int *)data));
+    } 
 
   }
 

@@ -1,17 +1,15 @@
-CONTIKI_PROJECT = coap-example-client observing server-hello
-
+CONTIKI_PROJECT = coap-sensor
 all: $(CONTIKI_PROJECT)
 
-# Do not try to build on Sky because of code size limitation
-PLATFORMS_EXCLUDE = sky z1
-
-# Include CoAP resources
-MODULES_REL += ./resources
-
 CONTIKI=../../../..
+SMART_GENERATOR=../..
 
 # Include the CoAP implementation
 include $(CONTIKI)/Makefile.dir-variables
 MODULES += $(CONTIKI_NG_APP_LAYER_DIR)/coap
+
+MODULES_REL += $(SMART_GENERATOR)/nodes/sensors
+# Include CoAP resources
+MODULES_REL += $(SMART_GENERATOR)/nodes/coap-node/resources
 
 include $(CONTIKI)/Makefile.include

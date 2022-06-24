@@ -107,7 +107,7 @@ pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
 static void 
 publish(char* pub_topic, int sample)
 {
-  json_sample(app_buffer, APP_BUFFER_SIZE, "temperature", sample, (int) client_id);
+  json_sample(app_buffer, APP_BUFFER_SIZE, "temperature", sample, "C", (int) client_id);
   mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer, strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
 }
 

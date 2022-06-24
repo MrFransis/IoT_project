@@ -12,6 +12,8 @@ public final class Collector {
         MqttCollector mqttcollector = new MqttCollector();
         mqttcollector.start();
         
+        
+
         while(true){
 
         }

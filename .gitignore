@@ -2,9 +2,10 @@
 collector/JavaCollector-tcp1270011883/
 collector/target/
 nodes/coap-node/build/
-nodes/coap-node/observing.cooja
+nodes/coap-node/coap-sensor.cooja
 nodes/mqtt-node/build/
 nodes/mqtt-node/mqtt-client.cooja
 rpl-border-router/build
 rpl-border-router/border-router.cooja
 collector/JavaCollecotr-tcp1270011883/.lck
+collector/Californium.properties

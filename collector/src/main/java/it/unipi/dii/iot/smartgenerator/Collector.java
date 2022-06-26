@@ -2,6 +2,7 @@ package it.unipi.dii.iot.smartgenerator;
 
 import java.util.Calendar;
 
+import it.unipi.dii.iot.smartgenerator.coap.CoapCollector;
 import it.unipi.dii.iot.smartgenerator.mqtt.MqttCollector;
 import it.unipi.dii.iot.smartgenerator.persistence.*;
 import org.apache.commons.cli.*;
@@ -12,8 +13,9 @@ public final class Collector {
         MqttCollector mqttcollector = new MqttCollector();
         mqttcollector.start();
         
+        CoapCollector coapcollector = new CoapCollector();
+        coapcollector.startObserving();
         
-
         while(true){
 
         }

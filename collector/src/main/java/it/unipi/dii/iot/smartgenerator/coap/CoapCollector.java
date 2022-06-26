@@ -7,11 +7,23 @@ import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.CoAP.*;
 import org.eclipse.californium.core.coap.Request;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
+
+import it.unipi.dii.iot.smartgenerator.persistence.MysqlDriver;
+import it.unipi.dii.iot.smartgenerator.persistence.MysqlManager;
+import it.unipi.dii.iot.smartgenerator.utils.Message;
+import it.unipi.dii.iot.smartgenerator.utils.Utils;
+
 public class CoapCollector {
     CoapClient client;
+    MysqlManager mysqlMan;
+    CoapObserveRelation relation;
 
     public CoapCollector(){
-        client = new CoapClient("coap://[" + "]/");
+        //Test
+        client = new CoapClient("coap://[fd00::202:2:2:2]/coolant");
+        mysqlMan = new MysqlManager(MysqlDriver.getInstance().openConnection());
     }
 
     public void onError() {
@@ -19,10 +31,12 @@ public class CoapCollector {
     }
 
     public void startObserving(){
-        CoapObserveRelation relation = client.observe(new CoapHandler() {
+            relation = client.observe(new CoapHandler() {
             public void onLoad(CoapResponse response) {
-                String content = response.getResponseText();
-                System.out.println(content);
+                String jsonMessage = new String(response.getResponseText());
+                Gson gson = new Gson();
+                Message msg = gson.fromJson(jsonMessage, Message.class);
+                mysqlMan.insertSample(msg);
             }
 
             public void onError() {
@@ -31,7 +45,7 @@ public class CoapCollector {
         });
     }
 
-    //public cancelObserving(){
-    //    relation.proactiveCancel();
-    //}
+    public void cancelObserving(){
+        relation.proactiveCancel();
+    }
 }

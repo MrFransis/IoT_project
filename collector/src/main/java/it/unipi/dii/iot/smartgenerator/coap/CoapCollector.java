@@ -13,6 +13,7 @@ import com.google.gson.JsonParseException;
 import it.unipi.dii.iot.smartgenerator.persistence.MysqlDriver;
 import it.unipi.dii.iot.smartgenerator.persistence.MysqlManager;
 import it.unipi.dii.iot.smartgenerator.utils.Message;
+import it.unipi.dii.iot.smartgenerator.utils.Sensor;
 import it.unipi.dii.iot.smartgenerator.utils.Utils;
 
 public class CoapCollector {
@@ -24,6 +25,13 @@ public class CoapCollector {
         //Test
         client = new CoapClient("coap://[fd00::202:2:2:2]/coolant");
         mysqlMan = new MysqlManager(MysqlDriver.getInstance().openConnection());
+
+    }
+
+    public CoapCollector(Sensor s){
+        client = new CoapClient(s.getUri());
+        mysqlMan = new MysqlManager(MysqlDriver.getInstance().openConnection());
+
     }
 
     public void onError() {

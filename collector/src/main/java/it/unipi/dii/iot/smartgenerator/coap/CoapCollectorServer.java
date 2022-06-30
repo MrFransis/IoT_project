@@ -5,7 +5,7 @@ import org.eclipse.californium.core.CoapServer;
 public class CoapCollectorServer extends CoapServer {
 
     public CoapCollectorServer() {
-        this.add(new CoapRegistration("coapRegistration"));
+        this.add(new CoapRegistration("coapReg"));
 		this.start();
     }
     

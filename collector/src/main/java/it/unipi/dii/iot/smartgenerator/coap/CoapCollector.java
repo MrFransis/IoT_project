@@ -21,13 +21,6 @@ public class CoapCollector {
     MysqlManager mysqlMan;
     CoapObserveRelation relation;
 
-    public CoapCollector(){
-        //Test
-        client = new CoapClient("coap://[fd00::202:2:2:2]/coolant");
-        mysqlMan = new MysqlManager(MysqlDriver.getInstance().openConnection());
-
-    }
-
     public CoapCollector(Sensor s){
         client = new CoapClient(s.getUri());
         mysqlMan = new MysqlManager(MysqlDriver.getInstance().openConnection());

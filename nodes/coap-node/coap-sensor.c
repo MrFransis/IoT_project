@@ -7,6 +7,7 @@
 #include "coap-blocking-api.h"
 #include "os/sys/etimer.h"
 #include "os/net/ipv6/uip-ds6.h"
+#include <sys/node-id.h>
 #include "./resources/res-coolant.h"
 #include "../sensors/coolant-level.h"
 
@@ -36,7 +37,7 @@ sensors_emulation(process_event_t event, int sample)
 {
   //Engine temperature 
   if(event == COOLANT_SAMPLE_EVENT){
-    res_coolant_update(sample);
+    res_coolant_update(sample, node_id);
   }
 }
 

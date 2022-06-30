@@ -11,6 +11,7 @@
 #include "dev/leds.h"
 #include "os/sys/log.h"
 #include "mqtt-client.h"
+#include <sys/node-id.h>
 #include "../sensors/temperature.h"
 #include "../sensors/utils.h"
 
@@ -107,8 +108,25 @@ pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
 static void 
 publish(char* pub_topic, int sample)
 {
-  json_sample(app_buffer, APP_BUFFER_SIZE, "temperature", sample, "C", (int) client_id);
-  mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer, strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
+  json_sample(app_buffer, APP_BUFFER_SIZE, "temperature", sample, "C", node_id);
+  int status = mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer, strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
+  
+  switch(status) {
+  case MQTT_STATUS_OK:
+    return;
+  case MQTT_STATUS_NOT_CONNECTED_ERROR: {
+    printf("Publishing failed. Error: MQTT_STATUS_NOT_CONNECTED_ERROR.\n");
+    return;
+  }
+  case MQTT_STATUS_OUT_QUEUE_FULL: {
+    printf("Publishing failed. Error: MQTT_STATUS_OUT_QUEUE_FULL.\n");
+    break;
+  }
+  default:
+    printf("Publishing failed. Error: unknown.\n");
+    return;
+  }
+
 }
 
 static void 

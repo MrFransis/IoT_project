@@ -15,6 +15,7 @@ static void res_event_handler(void);
  * If a smaller block size is requested for CoAP, the REST framework automatically splits the data.
  */
 static int coolant_sample;
+static int node_id;
 
 EVENT_RESOURCE(res_coolant,
         "title =\"Coolant\";obs",
@@ -29,9 +30,8 @@ res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buff
 {
   char json_response[512];
   int length;
-  int id = 111;
 
-  json_sample(json_response, 512, "coolant", coolant_sample, "L", id);
+  json_sample(json_response, 512, "coolant", coolant_sample, "L", node_id);
   length = strlen(json_response);
   memcpy(buffer, json_response, length);
 
@@ -55,8 +55,9 @@ res_coolant_activate(void)
 
 void
 res_coolant_update
-(int sample)
+(int sample, int id)
 {
+  node_id = id;
   coolant_sample = sample;
   res_coolant.trigger();
 }

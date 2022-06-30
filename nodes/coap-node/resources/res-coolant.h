@@ -3,6 +3,6 @@
 
 void res_coolant_activate(void);
 
-void res_coolant_update(int sample);
+void res_coolant_update(int sample, int node_id);
 
 #endif

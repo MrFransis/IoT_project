@@ -21,10 +21,10 @@ PROCESS_THREAD(temperature_sensor_process, ev, data)
   PROCESS_WAIT_EVENT_UNTIL(ev == TEMPERATURE_EVENT_SUB);
   subscriber = (struct process *)data;
 
-  etimer_set(&et, CLOCK_SECOND);
+  etimer_set(&et, CLOCK_SECOND*SAMPLING_INTERVAL);
   while(true) {
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
-    sample = sensor_rand_int(10, 100);
+    sample = sensor_rand_int(SAMPLE_LOWER_BOUND, SAMPLE_UPPER_BOUND);
     process_post(subscriber, TEMPERATURE_SAMPLE_EVENT, &sample);
     etimer_reset(&et);
   }

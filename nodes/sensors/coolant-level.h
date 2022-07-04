@@ -1,7 +1,9 @@
 #ifndef COOLANT_LEVEL_H_
 #define COOLANT_LEVEL_H_
 
-#define COOLANT_SAMPLING_INTERVAL         5
+#define SAMPLING_INTERVAL         5
+#define SAMPLE_LOWER_BOUND        30
+#define SAMPLE_UPPER_BOUND        30
 
 PROCESS_NAME(coolant_sensor_process);
 

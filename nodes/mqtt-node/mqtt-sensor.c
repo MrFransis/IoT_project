@@ -10,7 +10,7 @@
 #include "dev/button-hal.h"
 #include "dev/leds.h"
 #include "os/sys/log.h"
-#include "mqtt-client.h"
+#include "mqtt-sensor.h"
 #include <sys/node-id.h>
 #include "../sensors/temperature.h"
 #include "../sensors/utils.h"
@@ -18,7 +18,7 @@
 #include <string.h>
 #include <strings.h>
 /*---------------------------------------------------------------------------*/
-#define LOG_MODULE "mqtt-client"
+#define LOG_MODULE "mqtt-sensor"
 #ifdef MQTT_CLIENT_CONF_LOG_LEVEL
 #define LOG_LEVEL MQTT_CLIENT_CONF_LOG_LEVEL
 #else

@@ -1,7 +1,7 @@
 #ifndef TEMPERATURE_H_
 #define TEMPERATURE_H_
 
-#define SAMPLING_INTERVAL         5
+#define SAMPLING_INTERVAL         500
 #define TEMPERATURE_LOWER_BOUND        150
 #define TEMPERATURE_UPPER_BOUND        160
 

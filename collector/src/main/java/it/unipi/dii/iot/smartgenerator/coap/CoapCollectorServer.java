@@ -8,5 +8,4 @@ public class CoapCollectorServer extends CoapServer {
         this.add(new CoapRegistration("coapReg"));
 		this.start();
     }
-    
 }

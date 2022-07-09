@@ -99,7 +99,7 @@ pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
 
   if(strcmp(topic, "actuator") == 0) {
     printf("Received Actuator command\n");
-	printf("%s\n", chunk);
+	  printf("%s\n", chunk);
     // Do something :)
     return;
   }
@@ -260,7 +260,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
         process_post(&temperature_sensor_process, TEMPERATURE_EVENT_SUB, &mqtt_client_process);
         
 			  // Subscribe to a topic
-			  strcpy(sub_topic,"temperture");
+			  strcpy(sub_topic,"temperature");
 
 			  status = mqtt_subscribe(&conn, NULL, sub_topic, MQTT_QOS_LEVEL_0);
 

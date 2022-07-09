@@ -24,7 +24,6 @@ public class CoapCollector {
     public CoapCollector(Sensor s){
         client = new CoapClient(s.getUri());
         mysqlMan = new MysqlManager(MysqlDriver.getInstance().openConnection());
-
     }
 
     public void onError() {

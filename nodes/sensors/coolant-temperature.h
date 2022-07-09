@@ -9,5 +9,6 @@ PROCESS_NAME(coolant_temperature_sensor_process);
 
 extern process_event_t COOLANT_TEMPERATURE_SAMPLE_EVENT;
 extern process_event_t COOLANT_TEMPERATURE_EVENT_SUB;
+extern process_event_t COOLANT_TEMPERATURE_EVENT_ALERT;
 
 #endif 

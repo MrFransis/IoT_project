@@ -6,6 +6,9 @@
 #include "./utils.h"
 #include <stdio.h>
 
+#define OFF 0
+#define ON 1
+
 process_event_t MOTOR_RPM_SAMPLE_EVENT;
 process_event_t MOTOR_RPM_EVENT_SUB;
 struct process *subscriber;

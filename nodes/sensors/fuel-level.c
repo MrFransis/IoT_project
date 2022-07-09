@@ -8,6 +8,7 @@
 
 process_event_t FUEL_LEVEL_SAMPLE_EVENT;
 process_event_t FUEL_LEVEL_EVENT_SUB;
+process_event_t FUEL_LEVEL_EVENT_REFILL;
 struct process *subscriber;
 int sample;
 
@@ -17,16 +18,23 @@ PROCESS_THREAD(fuel_level_sensor_process, ev, data)
 {
   static struct etimer et;
   PROCESS_BEGIN();
+  sample = sensor_rand_int(FUEL_LOWER_BOUND, FUEL_UPPER_BOUND);
   FUEL_LEVEL_SAMPLE_EVENT = process_alloc_event();
-  PROCESS_WAIT_EVENT_UNTIL(ev == FUEL_LEVEL_EVENT_SUB);
+  PROCESS_WAIT_EVENT_UNTIL(ev == FUEL_SAMPLING_INTERVAL);
   subscriber = (struct process *)data;
 
   etimer_set(&et, CLOCK_SECOND);
-  while(true) {
-    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
-    sample = sensor_rand_int(FUEL_LOWER_BOUND, FUEL_UPPER_BOUND);
-    process_post(subscriber, FUEL_LEVEL_SAMPLE_EVENT, &sample);
-    etimer_reset(&et);
+  while(true){
+    PROCESS_YIELD();
+    if(ev == etimer_expired(&et)){
+      if(sample > 0){
+        sample -= 1;
+      }
+      process_post(subscriber, FUEL_LEVEL_SAMPLE_EVENT, &sample);
+      etimer_reset(&et);
+    }else if(ev == FUEL_LEVEL_EVENT_REFILL){
+      sample = sensor_rand_int(FUEL_LOWER_BOUND, FUEL_UPPER_BOUND);
+    }
   }
   PROCESS_END();
 }

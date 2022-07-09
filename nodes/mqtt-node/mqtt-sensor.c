@@ -11,7 +11,6 @@
 #include "dev/etc/rgb-led/rgb-led.h"
 #include "os/sys/log.h"
 #include "mqtt-sensor.h"
-#include "../sensors/battery-voltage.h"
 #include "../sensors/coolant-level.h"
 #include "../sensors/coolant-temperature.h"
 #include "../sensors/energy-generated.h"
@@ -146,7 +145,6 @@ publish(char* pub_topic, int sample)
     printf("Publishing failed. Error: unknown.\n");
     return;
   }
-
 }
 
 static void 
@@ -166,8 +164,6 @@ sensors_emulation(process_event_t event, int sample)
     publish("coolant_temperature", sample);
   }else if(event == COOLANT_SAMPLE_EVENT){
     publish("coolant", sample);
-  }else if(event == BATTERY_VOLTAGE_SAMPLE_EVENT){
-    publish("battery_voltage", sample);
   }
 }
 
@@ -176,18 +172,21 @@ load_sensors_processes()
 {
   process_start(&temperature_sensor_process, NULL);
   process_post(&temperature_sensor_process, TEMPERATURE_EVENT_SUB, &mqtt_client_process);
+
   process_start(&motor_rpm_sensor_process, NULL);
   process_post(&motor_rpm_sensor_process, MOTOR_RPM_EVENT_SUB, &mqtt_client_process);
+
   process_start(&fuel_level_sensor_process, NULL);
   process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_SUB, &mqtt_client_process);
+
   process_start(&energy_sensor_process, NULL);
   process_post(&energy_sensor_process, ENERGY_EVENT_SUB, &mqtt_client_process);
+
   process_start(&coolant_temperature_sensor_process, NULL);
   process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_SUB, &mqtt_client_process);
+
   process_start(&coolant_sensor_process, NULL);
   process_post(&coolant_sensor_process, COOLANT_EVENT_SUB, &mqtt_client_process);
-  process_start(&battery_voltage_sensor_process, NULL);
-  process_post(&battery_voltage_sensor_process, BATTERY_VOLTAGE_EVENT_SUB, &mqtt_client_process);
 }
 
 static bool
@@ -198,8 +197,7 @@ sensor_event(process_event_t event)
        || event == FUEL_LEVEL_SAMPLE_EVENT
        || event == ENERGY_SAMPLE_EVENT
        || event == COOLANT_TEMPERATURE_SAMPLE_EVENT
-       || event == COOLANT_SAMPLE_EVENT
-       || event == BATTERY_VOLTAGE_SAMPLE_EVENT) {
+       || event == COOLANT_SAMPLE_EVENT) {
     return true;
   }
   return false;

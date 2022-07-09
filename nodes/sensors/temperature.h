@@ -9,5 +9,6 @@ PROCESS_NAME(temperature_sensor_process);
 
 extern process_event_t TEMPERATURE_SAMPLE_EVENT;
 extern process_event_t TEMPERATURE_EVENT_SUB;
+extern process_event_t TEMPERATURE_EVENT_ALERT;
 
 #endif 

@@ -4,6 +4,12 @@
 #include "coap-engine.h"
 #include "dev/etc/rgb-led/rgb-led.h"
 #include "../../sensors/utils.h"
+#include "../../sensors/coolant-level.h"
+#include "../../sensors/coolant-temperature.h"
+#include "../../sensors/energy-generated.h"
+#include "../../sensors/fuel-level.h"
+#include "../../sensors/motor-rpm.h"
+#include "../../sensors/temperature.h"
 
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
@@ -58,13 +64,14 @@ res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buf
       if (postState != state) {
         if (postState == NO_ERROR) {
           printf("Riattivo sensori...\n");
+          int data = OFF;
           switch (state)
           {
           case COOLANT_TEMPERATURE_ERROR:
-            process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_ALERT, OFF);
+            process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_ALERT, &data);
             break;
           case TEMPERATURE_ERROR:
-            process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, OFF);
+            process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, &data);
             break;
           default:
             break;
@@ -74,15 +81,16 @@ res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buf
           printf("Led verde\n");
         } else {
           printf("Disattivo sensori e cambio colore ai led...\n");
+          int data = ON;
           switch (postState)
           {
           case COOLANT_TEMPERATURE_ERROR:
-            process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_ALERT, ON);
+            process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_ALERT, &data);
             //rgb_led_set(RGB_LED_MAGENTA);
             printf("Led magenta\n");
             break;
           case TEMPERATURE_ERROR:
-            process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, ON);
+            process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, &data);
             //rgb_led_set(RGB_LED_RED);
             printf("Led rosso\n");
             break;
@@ -98,6 +106,7 @@ res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buf
             break;
           }
         }
+        state = postState;
       }
     } else {
       success = 0;

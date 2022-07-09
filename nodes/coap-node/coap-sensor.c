@@ -15,7 +15,16 @@
 #include "../sensors/fuel-level.h"
 #include "../sensors/motor-rpm.h"
 #include "../sensors/temperature.h"
+<<<<<<< HEAD
 #include "../sensors/utils.h"
+=======
+#include "./resources/res-coolant-temperature.h"
+#include "./resources/res-coolant.h"
+#include "./resources/res-energy-generated.h"
+#include "./resources/res-fuel-level.h"
+#include "./resources/res-motor-rpm.h"
+#include "./resources/res-temperature.h"
+>>>>>>> 5459acba912b75338cc2f54dda7b14629ccad665
 
 #define SENSOR_ID_LENGTH 10
 #define STATE_INIT    		  0
@@ -43,28 +52,18 @@ static void
 sensors_emulation(process_event_t event, int sample)
 {
   printf("%d /n", sample);
-  switch (event)
-  {
-  case TEMPERATURE_SAMPLE_EVENT:
+  if (event == TEMPERATURE_SAMPLE_EVENT){
     res_temperature_update(sample, node_id);
-    break;
-  case MOTOR_RPM_SAMPLE_EVENT:
+  } else if (event == MOTOR_RPM_SAMPLE_EVENT) {
     res_motor_rpm_update(sample, node_id);
-    break;
-  case FUEL_LEVEL_SAMPLE_EVENT:
+  } else if (event == FUEL_LEVEL_SAMPLE_EVENT) {
     res_fuel_level_update(sample, node_id);
-    break;
-  case ENERGY_SAMPLE_EVENT:
+  } else if (event == ENERGY_SAMPLE_EVENT) {
     res_energy_generated_update(sample, node_id);
-    break;
-  case COOLANT_TEMPERATURE_SAMPLE_EVENT:
+  } else if (event == COOLANT_TEMPERATURE_SAMPLE_EVENT) {
     res_coolant_temperature_update(sample, node_id);
-    break;
-  case COOLANT_SAMPLE_EVENT:
+  } else if (event == COOLANT_SAMPLE_EVENT) {
     res_coolant_update(sample, node_id);
-    break;
-  default:
-    break;
   }
 }
 

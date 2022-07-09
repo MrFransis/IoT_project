@@ -1,6 +1,8 @@
 package it.unipi.dii.iot.smartgenerator.mqtt;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Properties;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
@@ -24,7 +26,9 @@ public class MqttCollector implements MqttCallback{
     String clientId;
     MqttClient mqttClient;
     MysqlManager mysqlMan;
-
+    List<Integer> tempWarningNodes = new ArrayList<>();
+    List<Integer> coolantWarningNodes = new ArrayList<>();
+    
     public MqttCollector(){
         Properties configurationParameters = Utils.readConfigurationParameters();
         topic = "#";
@@ -75,20 +79,32 @@ public class MqttCollector implements MqttCallback{
         mysqlMan.insertSample(msg);
         switch(msg.getTopic()) {
             case "temperature":
-                if(msg.getSample() > 10)
-                publish("temperature", msg.getMachineId());
+                if(msg.getSample() > 10 && !tempWarningNodes.contains((Integer) msg.getMachineId())){
+                    publish("temperature", msg.getMachineId());
+                    tempWarningNodes.add((Integer) msg.getMachineId());
+                }else if(msg.getSample() < 10 && tempWarningNodes.contains((Integer) msg.getMachineId())){
+                    publish("temperature_off", msg.getMachineId());
+                    tempWarningNodes.remove((Integer) msg.getMachineId());
+                }
                 break;
             case "fuel_level":
-                if(msg.getSample() < 10)
-                publish("fuel_level", msg.getMachineId());
+                if(msg.getSample() < 10){
+                    publish("fuel_level", msg.getMachineId());
+                }
                 break;
             case "coolant_temperature":
-                if(msg.getSample() > 10)
-                publish("coolant_temperature", msg.getMachineId());
+                if(msg.getSample() > 10 && !coolantWarningNodes.contains((Integer) msg.getMachineId())){
+                    publish("coolant_temperature", msg.getMachineId());
+                    coolantWarningNodes.add((Integer) msg.getMachineId());
+                }else if(msg.getSample() < 10 && coolantWarningNodes.contains((Integer) msg.getMachineId())){
+                    publish("coolant_temperature_off", msg.getMachineId());
+                    coolantWarningNodes.remove((Integer) msg.getMachineId());
+                }
                 break;
             case "coolant":
-                if(msg.getSample() < 10)
-                publish("coolant", msg.getMachineId());
+                if(msg.getSample() < 10){
+                    publish("coolant", msg.getMachineId());
+                }
                 break;
             default:
               // code block

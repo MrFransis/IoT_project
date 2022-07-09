@@ -22,6 +22,9 @@
 
 #include <string.h>
 #include <strings.h>
+
+#define OFF 0
+#define ON 1
 /*---------------------------------------------------------------------------*/
 #define LOG_MODULE "mqtt-sensor"
 #ifdef MQTT_CLIENT_CONF_LOG_LEVEL
@@ -107,16 +110,20 @@ pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
 	  printf("%s\n", chunk);
     if(strcmp((const char *)chunk, "coolant_temp")==0){
       //rgb_led_set(RGB_LED_RED);
-      printf("1\n");
+      process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_ALERT, ON);
+    }else if (strcmp((const char *)chunk, "coolant_temp_off")==0){
+      //rgb_led_set(RGB_LED_RED);
+      process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_ALERT, OFF);
     }else if (strcmp((const char *)chunk, "temperature")==0){
       //rgb_led_set(RGB_LED_RED);
-      printf("2\n");
+      process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, ON);
+    }else if (strcmp((const char *)chunk, "temperature_off")==0){
+      //rgb_led_set(RGB_LED_RED);
+      process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, OFF);
     }else if (strcmp((const char *)chunk, "fuel_lvl")==0){
       //rgb_led_set(RGB_LED_BLUE);
-      printf("3\n");
     }else if (strcmp((const char *)chunk, "coolant_lvl")==0){
       //rgb_led_set(RGB_LED_RED);
-      printf("4\n");
     }else{
         printf("UNKNOWN COMMAND\n");
     }
@@ -346,9 +353,14 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
       
     }
     if(sensor_event(ev) && state == STATE_SUBSCRIBED){
-        // Publish something
-        sensors_emulation(ev, *((int *)data));
+      // Publish something
+      sensors_emulation(ev, *((int *)data));
     } 
+    if(ev = button_hal_press_event && state == STATE_SUBSCRIBED){
+      process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_REFILL);
+      process_post(&coolant_sensor_process, COOLANT_EVENT_REFILL);
+      //rgb_led_set(RGB_LED_RED);
+    }
 
   }
 

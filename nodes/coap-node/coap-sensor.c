@@ -7,7 +7,6 @@
 #include "coap-blocking-api.h"
 #include "os/sys/etimer.h"
 #include "os/net/ipv6/uip-ds6.h"
-#include <sys/node-id.h>
 #include "./resources/res-coolant.h"
 #include "../sensors/coolant-level.h"
 
@@ -24,6 +23,7 @@ AUTOSTART_PROCESSES(&coap_server);
 char *service_url = "coapReg";
 static uint8_t state;
 bool registered = false;
+static int node_id;
 
 /*
  * Resources to be activated need to be imported through the extern keyword.
@@ -82,6 +82,8 @@ PROCESS_THREAD(coap_server, ev, data)
   static coap_message_t request[1]; 
   PROCESS_BEGIN();
   init_monitor();
+
+  node_id = linkaddr_node_addr.u8[7];
 
   //Registration to the collector
   coap_endpoint_parse(SERVER, strlen(SERVER), &server);

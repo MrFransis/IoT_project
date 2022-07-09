@@ -11,9 +11,9 @@
 #include "dev/leds.h"
 #include "os/sys/log.h"
 #include "mqtt-sensor.h"
-#include <sys/node-id.h>
 #include "../sensors/temperature.h"
 #include "../sensors/utils.h"
+//#include "ieee-addr.h"
 
 #include <string.h>
 #include <strings.h>
@@ -69,6 +69,8 @@ static char broker_address[CONFIG_IP_ADDR_STR_LEN];
 static char client_id[BUFFER_SIZE];
 //static char pub_topic[BUFFER_SIZE];
 static char sub_topic[BUFFER_SIZE];
+
+static int node_id;
 
 // Periodic timer to check the state of the MQTT client
 #define STATE_MACHINE_PERIODIC     (CLOCK_SECOND >> 1)
@@ -224,7 +226,11 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
   // Broker registration					 
   mqtt_register(&conn, &mqtt_client_process, client_id, mqtt_event,
                   MAX_TCP_SEGMENT_SIZE);
-				  
+
+	  
+  node_id = linkaddr_node_addr.u8[7];
+  //node_id = IEEE_ADDR_NODE_ID
+
   state=STATE_INIT;
 				    
   // Initialize periodic timer to check the status 

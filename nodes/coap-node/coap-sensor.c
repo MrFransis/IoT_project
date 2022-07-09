@@ -7,6 +7,7 @@
 #include "coap-blocking-api.h"
 #include "os/sys/etimer.h"
 #include "os/net/ipv6/uip-ds6.h"
+#include "dev/etc/rgb-led/rgb-led.h"
 #include "./resources/res-coolant.h"
 #include "../sensors/coolant-level.h"
 
@@ -35,9 +36,21 @@ extern coap_resource_t res_coolant;
 static void 
 sensors_emulation(process_event_t event, int sample)
 {
-  //Engine temperature 
-  if(event == COOLANT_SAMPLE_EVENT){
+  printf("%d /n", sample);
+  if(event == TEMPERATURE_SAMPLE_EVENT){
+    res_temperature_update(sample, node_id);
+  }else if(event == MOTOR_RPM_SAMPLE_EVENT){
+    res_motor_rpm_update(sample, node_id);
+  }else if(event == FUEL_LEVEL_SAMPLE_EVENT){
+    res_fuel_level_update(sample, node_id);
+  }else if(event == ENERGY_SAMPLE_EVENT){
+    res_energy_generated_update(sample, node_id);
+  }else if(event == COOLANT_TEMPERATURE_SAMPLE_EVENT){
+    res_coolant_temperature_update(sample, node_id);
+  }else if(event == COOLANT_SAMPLE_EVENT){
     res_coolant_update(sample, node_id);
+  }else if(event == BATTERY_VOLTAGE_SAMPLE_EVENT){
+    res_battery_voltage_update(sample, node_id);
   }
 }
 
@@ -71,9 +84,49 @@ static void
 init_monitor()
 {
   state = STATE_INIT;
+
+  res_temperature_activate();
+  process_start(&temperature_sensor_process, NULL);
+  process_post(&temperature_sensor_process, TEMPERATURE_EVENT_SUB, &coap_server);
+
+  res_motor_rpm_activate();
+  process_start(&motor_rpm_sensor_process, NULL);
+  process_post(&motor_rpm_sensor_process, MOTOR_RPM_EVENT_SUB, &coap_server);
+
+  res_fuel_level_activate();
+  process_start(&fuel_level_sensor_process, NULL);
+  process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_SUB, &coap_server);
+
+  res_energy_generated_activate();
+  process_start(&energy_sensor_process, NULL);
+  process_post(&energy_sensor_process, ENERGY_EVENT_SUB, &coap_server);
+
+  res_coolant_temperature_activate();
+  process_start(&coolant_temperature_sensor_process, NULL);
+  process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_SUB, &coap_server);
+
   res_coolant_activate();
   process_start(&coolant_sensor_process, NULL);
   process_post(&coolant_sensor_process, COOLANT_EVENT_SUB, &coap_server);
+
+  res_battery_voltage_activate();
+  process_start(&battery_voltage_sensor_process, NULL);
+  process_post(&battery_voltage_sensor_process, BATTERY_VOLTAGE_EVENT_SUB, &coap_server);
+}
+
+static bool
+sensor_event(process_event_t event)
+{
+    if(event == TEMPERATURE_SAMPLE_EVENT
+       || event == MOTOR_RPM_SAMPLE_EVENT
+       || event == FUEL_LEVEL_SAMPLE_EVENT
+       || event == ENERGY_SAMPLE_EVENT
+       || event == COOLANT_TEMPERATURE_SAMPLE_EVENT
+       || event == COOLANT_SAMPLE_EVENT
+       || event == BATTERY_VOLTAGE_SAMPLE_EVENT) {
+    return true;
+  }
+  return false;
 }
 
 PROCESS_THREAD(coap_server, ev, data)
@@ -102,8 +155,7 @@ PROCESS_THREAD(coap_server, ev, data)
 			COAP_BLOCKING_REQUEST(&server, request, client_chunk_handler);  
     }
 
-    if(state == COAP_MONITOR_STATE_OPERATIONAL){
-      if (ev == COOLANT_SAMPLE_EVENT && )
+    if(sensor_event(ev) && state == COAP_MONITOR_STATE_OPERATIONAL){
       sensors_emulation(ev, *((int *)data));
     }
   }                             

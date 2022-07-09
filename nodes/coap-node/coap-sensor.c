@@ -102,7 +102,8 @@ PROCESS_THREAD(coap_server, ev, data)
 			COAP_BLOCKING_REQUEST(&server, request, client_chunk_handler);  
     }
 
-    if(ev == COOLANT_SAMPLE_EVENT && state == COAP_MONITOR_STATE_OPERATIONAL){
+    if(state == COAP_MONITOR_STATE_OPERATIONAL){
+      if (ev == COOLANT_SAMPLE_EVENT && )
       sensors_emulation(ev, *((int *)data));
     }
   }                             

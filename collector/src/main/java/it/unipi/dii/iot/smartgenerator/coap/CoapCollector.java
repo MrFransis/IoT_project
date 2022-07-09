@@ -18,12 +18,23 @@ import it.unipi.dii.iot.smartgenerator.utils.Utils;
 
 public class CoapCollector {
     CoapClient client;
+    CoapClient alertClient;
     MysqlManager mysqlMan;
     CoapObserveRelation relation;
+    boolean sensorMaxValueExceeded;
+    String resource;
+
+    public static final int COOLANT_LEVEL_THRESHOLD = 30;
+    public static final int COOLANT_TEMPERATURE_THRESHOLD = 70;
+    public static final int FUEL_LEVEL_THRESHOLD = 800;
+    public static final int TEMPERATURE_THRESHOLD = 150;
 
     public CoapCollector(Sensor s){
         client = new CoapClient(s.getUri());
         mysqlMan = new MysqlManager(MysqlDriver.getInstance().openConnection());
+        alertClient = new CoapClient("coap://[" + s.getNodeIp() + "]/alert");
+        sensorMaxValueExceeded = false;
+        resource = s.getResourcePath();
     }
 
     public void onError() {
@@ -37,6 +48,9 @@ public class CoapCollector {
                 Gson gson = new Gson();
                 Message msg = gson.fromJson(jsonMessage, Message.class);
                 mysqlMan.insertSample(msg);
+                if (resource == "coolant_temperature") {
+                    // do something
+                }
             }
 
             public void onError() {

@@ -37,28 +37,18 @@ static void
 sensors_emulation(process_event_t event, int sample)
 {
   printf("%d /n", sample);
-  switch (event)
-  {
-  case TEMPERATURE_SAMPLE_EVENT:
+  if (event == TEMPERATURE_SAMPLE_EVENT){
     res_temperature_update(sample, node_id);
-    break;
-  case MOTOR_RPM_SAMPLE_EVENT:
+  } else if (event == MOTOR_RPM_SAMPLE_EVENT) {
     res_motor_rpm_update(sample, node_id);
-    break;
-  case FUEL_LEVEL_SAMPLE_EVENT:
+  } else if (event == FUEL_LEVEL_SAMPLE_EVENT) {
     res_fuel_level_update(sample, node_id);
-    break;
-  case ENERGY_SAMPLE_EVENT:
+  } else if (event == ENERGY_SAMPLE_EVENT) {
     res_energy_generated_update(sample, node_id);
-    break;
-  case COOLANT_TEMPERATURE_SAMPLE_EVENT:
+  } else if (event == COOLANT_TEMPERATURE_SAMPLE_EVENT) {
     res_coolant_temperature_update(sample, node_id);
-    break;
-  case COOLANT_SAMPLE_EVENT:
+  } else if (event == COOLANT_SAMPLE_EVENT) {
     res_coolant_update(sample, node_id);
-    break;
-  default:
-    break;
   }
 }
 

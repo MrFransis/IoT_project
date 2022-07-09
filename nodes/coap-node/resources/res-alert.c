@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "coap-engine.h"
+#include "dev/etc/rgb-led/rgb-led.h"
 #include "../../sensors/utils.h"
 
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
@@ -10,11 +11,14 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response, 
 /*---------------------------------------------------------------------------*/
 static uint8_t state;
 
-#define ON    		                    0
+#define NO_ERROR    		              0
 #define COOLANT_TEMPERATURE_ERROR     1
 #define COOLANT_LEVEL_ERROR           2
 #define FUEL_LEVEL_ERROR              3
 #define TEMPERATURE_ERROR             4
+
+#define OFF 0
+#define ON 1
 /*
  * A handler function named [resource name]_handler must be implemented for each RESOURCE.
  * A buffer for the response payload is provided through the buffer pointer. Simple resources can ignore
@@ -52,14 +56,47 @@ res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buf
     postState = atoi(value);
     if (postState >= 0 && postState < 5) {
       if (postState != state) {
-        state = postState;
-        if (state == 0) {
+        if (postState == NO_ERROR) {
           printf("Riattivo sensori...\n");
-          // riattivo sensori
+          switch (state)
+          {
+          case COOLANT_TEMPERATURE_ERROR:
+            process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_ALERT, OFF);
+            break;
+          case TEMPERATURE_ERROR:
+            process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, OFF);
+            break;
+          default:
+            break;
+          }
+          //rimetto led verde
+          //rgb_led_set(RGB_LED_GREEN);
+          printf("Led verde\n");
         } else {
           printf("Disattivo sensori e cambio colore ai led...\n");
-          // disattivo sensori
-          // cambio colore ai led
+          switch (postState)
+          {
+          case COOLANT_TEMPERATURE_ERROR:
+            process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_ALERT, ON);
+            //rgb_led_set(RGB_LED_MAGENTA);
+            printf("Led magenta\n");
+            break;
+          case TEMPERATURE_ERROR:
+            process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, ON);
+            //rgb_led_set(RGB_LED_RED);
+            printf("Led rosso\n");
+            break;
+          case COOLANT_LEVEL_ERROR:
+            //rgb_led_set(RGB_LED_BLUE);
+            printf("Led blue\n");
+            break;
+          case FUEL_LEVEL_ERROR:
+            //rgb_led_set(RGB_LED_YELLOW);
+            printf("Led giallo\n");
+            break;
+          default:
+            break;
+          }
         }
       }
     } else {

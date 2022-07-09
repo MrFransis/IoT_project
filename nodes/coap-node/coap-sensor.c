@@ -57,9 +57,6 @@ sensors_emulation(process_event_t event, int sample)
   case COOLANT_SAMPLE_EVENT:
     res_coolant_update(sample, node_id);
     break;
-  case BATTERY_VOLTAGE_SAMPLE_EVENT:
-    res_battery_voltage_update(sample, node_id);
-    break;
   default:
     break;
   }
@@ -119,10 +116,6 @@ init_monitor()
   res_coolant_activate();
   process_start(&coolant_sensor_process, NULL);
   process_post(&coolant_sensor_process, COOLANT_EVENT_SUB, &coap_server);
-
-  res_battery_voltage_activate();
-  process_start(&battery_voltage_sensor_process, NULL);
-  process_post(&battery_voltage_sensor_process, BATTERY_VOLTAGE_EVENT_SUB, &coap_server);
 }
 
 static bool
@@ -133,8 +126,7 @@ sensor_event(process_event_t event)
        || event == FUEL_LEVEL_SAMPLE_EVENT
        || event == ENERGY_SAMPLE_EVENT
        || event == COOLANT_TEMPERATURE_SAMPLE_EVENT
-       || event == COOLANT_SAMPLE_EVENT
-       || event == BATTERY_VOLTAGE_SAMPLE_EVENT) {
+       || event == COOLANT_SAMPLE_EVENT) {
     return true;
   }
   return false;

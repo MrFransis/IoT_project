@@ -31,7 +31,7 @@ public class CoapCollector {
     public static final int FUEL_LEVEL_THRESHOLD = 800;
     public static final int TEMPERATURE_THRESHOLD = 150;
 
-    public static final int ON = 0;
+    public static final int NO_ERROR = 0;
     public static final int COOLANT_TEMPERATURE_ERROR = 1;
     public static final int COOLANT_LEVEL_ERROR = 2;
     public static final int FUEL_LEVEL_ERROR = 3;
@@ -97,7 +97,7 @@ public class CoapCollector {
                 // sensor value has returned to normal
                 if (!currentMaxValueExceeded && sensorMaxValueExceeded) {
                     sensorMaxValueExceeded = false;
-                    sensorState = ON;
+                    sensorState = NO_ERROR;
                 }
 
                 if (sensorState != -1) {

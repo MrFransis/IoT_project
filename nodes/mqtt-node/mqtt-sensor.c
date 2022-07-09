@@ -110,16 +110,16 @@ pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
 	  printf("%s\n", chunk);
     if(strcmp((const char *)chunk, "coolant_temp")==0){
       //rgb_led_set(RGB_LED_RED);
-      process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_ALERT, ON);
+      process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_ALERT, (int*) ON);
     }else if (strcmp((const char *)chunk, "coolant_temp_off")==0){
       //rgb_led_set(RGB_LED_RED);
-      process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_ALERT, OFF);
+      process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_ALERT, (int*) OFF);
     }else if (strcmp((const char *)chunk, "temperature")==0){
       //rgb_led_set(RGB_LED_RED);
-      process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, ON);
+      process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, (int*) ON);
     }else if (strcmp((const char *)chunk, "temperature_off")==0){
       //rgb_led_set(RGB_LED_RED);
-      process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, OFF);
+      process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, (int*) OFF);
     }else if (strcmp((const char *)chunk, "fuel_lvl")==0){
       //rgb_led_set(RGB_LED_BLUE);
     }else if (strcmp((const char *)chunk, "coolant_lvl")==0){
@@ -356,9 +356,9 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
       // Publish something
       sensors_emulation(ev, *((int *)data));
     } 
-    if(ev = button_hal_press_event && state == STATE_SUBSCRIBED){
-      process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_REFILL);
-      process_post(&coolant_sensor_process, COOLANT_EVENT_REFILL);
+    if(ev == button_hal_press_event && state == STATE_SUBSCRIBED){
+      process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_REFILL, "");
+      process_post(&coolant_sensor_process, COOLANT_EVENT_REFILL, "");
       //rgb_led_set(RGB_LED_RED);
     }
 

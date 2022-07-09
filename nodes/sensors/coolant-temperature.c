@@ -13,7 +13,8 @@ process_event_t COOLANT_TEMPERATURE_SAMPLE_EVENT;
 process_event_t COOLANT_TEMPERATURE_EVENT_SUB;
 process_event_t COOLANT_TEMPERATURE_EVENT_ALERT;
 struct process *subscriber;
-int alter;
+int sample;
+int alert;
 
 PROCESS(coolant_temperature_sensor_process, "Coolant temperature sensor process");
 
@@ -38,7 +39,7 @@ PROCESS_THREAD(coolant_temperature_sensor_process, ev, data)
     process_post(subscriber, COOLANT_TEMPERATURE_SAMPLE_EVENT, &sample);
       etimer_reset(&et);
     }else if(ev == COOLANT_TEMPERATURE_EVENT_ALERT){
-      alert = data;
+      alert = *((int *)data);
     }
   }
   PROCESS_END();

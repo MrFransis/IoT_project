@@ -24,7 +24,7 @@ PROCESS_THREAD(energy_sensor_process, ev, data)
   etimer_set(&et, CLOCK_SECOND);
   while(true) {
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
-    sample = sensor_rand_int(SAMPLE_LOWER_BOUND, SAMPLE_UPPER_BOUND);
+    sample = sensor_rand_int(ENERGY_LOWER_BOUND, ENERGY_UPPER_BOUND);
     process_post(subscriber, ENERGY_SAMPLE_EVENT, &sample);
     etimer_reset(&et);
   }

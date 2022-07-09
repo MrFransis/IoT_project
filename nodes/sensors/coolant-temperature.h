@@ -2,8 +2,8 @@
 #define COOLANT_TEMPERATURE_H_
 
 #define SAMPLING_INTERVAL         5
-#define SAMPLE_LOWER_BOUND        67
-#define SAMPLE_UPPER_BOUND        70
+#define COOLANT_TEMPERATURE_LOWER_BOUND        67
+#define COOLANT_TEMPERATURE_UPPER_BOUND        70
 
 PROCESS_NAME(coolant_temperature_sensor_process);
 

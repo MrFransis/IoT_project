@@ -8,9 +8,15 @@
 #include "sys/ctimer.h"
 #include "lib/sensors.h"
 #include "dev/button-hal.h"
-#include "dev/leds.h"
+#include "dev/etc/rgb-led/rgb-led.h"
 #include "os/sys/log.h"
 #include "mqtt-sensor.h"
+#include "../sensors/battery-voltage.h"
+#include "../sensors/coolant-level.h"
+#include "../sensors/coolant-temperature.h"
+#include "../sensors/energy-generated.h"
+#include "../sensors/fuel-level.h"
+#include "../sensors/motor-rpm.h"
 #include "../sensors/temperature.h"
 #include "../sensors/utils.h"
 //#include "ieee-addr.h"
@@ -67,7 +73,6 @@ static char broker_address[CONFIG_IP_ADDR_STR_LEN];
 #define BUFFER_SIZE 64
 
 static char client_id[BUFFER_SIZE];
-//static char pub_topic[BUFFER_SIZE];
 static char sub_topic[BUFFER_SIZE];
 
 static int node_id;
@@ -98,11 +103,24 @@ pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
 {
   printf("Pub Handler: topic='%s' (len=%u), chunk_len=%u\n", topic,
           topic_len, chunk_len);
-
-  if(strcmp(topic, "actuator") == 0) {
+  if(strcmp(topic, sub_topic) == 0) {
     printf("Received Actuator command\n");
 	  printf("%s\n", chunk);
-    // Do something :)
+    if(strcmp((const char *)chunk, "coolant_temp")==0){
+      //rgb_led_set(RGB_LED_RED);
+      printf("1\n");
+    }else if (strcmp((const char *)chunk, "temperature")==0){
+      //rgb_led_set(RGB_LED_RED);
+      printf("2\n");
+    }else if (strcmp((const char *)chunk, "fuel_lvl")==0){
+      //rgb_led_set(RGB_LED_BLUE);
+      printf("3\n");
+    }else if (strcmp((const char *)chunk, "coolant_lvl")==0){
+      //rgb_led_set(RGB_LED_RED);
+      printf("4\n");
+    }else{
+        printf("UNKNOWN COMMAND\n");
+    }
     return;
   }
 }
@@ -134,17 +152,57 @@ publish(char* pub_topic, int sample)
 static void 
 sensors_emulation(process_event_t event, int sample)
 {
+  printf("%d /n", sample);
   //Engine temperature 
   if(event == TEMPERATURE_SAMPLE_EVENT){
     publish("temperature", sample);
+  }else if(event == MOTOR_RPM_SAMPLE_EVENT){
+    publish("rpm", sample);
+  }else if(event == FUEL_LEVEL_SAMPLE_EVENT){
+    publish("fuel_level", sample);
+  }else if(event == ENERGY_SAMPLE_EVENT){
+    publish("energy_generated", sample);
+  }else if(event == COOLANT_TEMPERATURE_SAMPLE_EVENT){
+    publish("coolant_temperature", sample);
+  }else if(event == COOLANT_SAMPLE_EVENT){
+    publish("coolant", sample);
+  }else if(event == BATTERY_VOLTAGE_SAMPLE_EVENT){
+    publish("battery_voltage", sample);
   }
-  //Motor RPM sensor
+}
 
-  //Fuel level sensor
+static void
+load_sensors_processes()
+{
+  process_start(&temperature_sensor_process, NULL);
+  process_post(&temperature_sensor_process, TEMPERATURE_EVENT_SUB, &mqtt_client_process);
+  process_start(&motor_rpm_sensor_process, NULL);
+  process_post(&motor_rpm_sensor_process, MOTOR_RPM_EVENT_SUB, &mqtt_client_process);
+  process_start(&fuel_level_sensor_process, NULL);
+  process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_SUB, &mqtt_client_process);
+  process_start(&energy_sensor_process, NULL);
+  process_post(&energy_sensor_process, ENERGY_EVENT_SUB, &mqtt_client_process);
+  process_start(&coolant_temperature_sensor_process, NULL);
+  process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_SUB, &mqtt_client_process);
+  process_start(&coolant_sensor_process, NULL);
+  process_post(&coolant_sensor_process, COOLANT_EVENT_SUB, &mqtt_client_process);
+  process_start(&battery_voltage_sensor_process, NULL);
+  process_post(&battery_voltage_sensor_process, BATTERY_VOLTAGE_EVENT_SUB, &mqtt_client_process);
+}
 
-  //Energy generated sensor
-
-  //Battery voltage
+static bool
+sensor_event(process_event_t event)
+{
+    if(event == TEMPERATURE_SAMPLE_EVENT
+       || event == MOTOR_RPM_SAMPLE_EVENT
+       || event == FUEL_LEVEL_SAMPLE_EVENT
+       || event == ENERGY_SAMPLE_EVENT
+       || event == COOLANT_TEMPERATURE_SAMPLE_EVENT
+       || event == COOLANT_SAMPLE_EVENT
+       || event == BATTERY_VOLTAGE_SAMPLE_EVENT) {
+    return true;
+  }
+  return false;
 }
 /*---------------------------------------------------------------------------*/
 static void
@@ -214,7 +272,6 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 {
 
   PROCESS_BEGIN();
-
   printf("MQTT Client Process\n");
 
   // Initialize the ClientID as MAC address
@@ -262,11 +319,15 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 		  
 		  if(state==STATE_CONNECTED){
         //start sensors
-        process_start(&temperature_sensor_process, NULL);
-        process_post(&temperature_sensor_process, TEMPERATURE_EVENT_SUB, &mqtt_client_process);
-        
+        load_sensors_processes();
+        printf("ok\n");
+        //led color to operational
+        //rgb_led_set(RGB_LED_GREEN);
+
 			  // Subscribe to a topic
-			  strcpy(sub_topic,"temperature");
+        char topic[64];
+        sprintf(topic, "alarm_%d", node_id);
+        strcpy(sub_topic,topic);
 
 			  status = mqtt_subscribe(&conn, NULL, sub_topic, MQTT_QOS_LEVEL_0);
 
@@ -279,13 +340,14 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 			  state = STATE_SUBSCRIBED;
 		  }else if ( state == STATE_DISCONNECTED ){
         LOG_ERR("Disconnected form MQTT broker\n");	
+        state = STATE_INIT;
         // Recover from error
       }
       
       etimer_set(&periodic_timer, STATE_MACHINE_PERIODIC);
       
     }
-    if(ev == TEMPERATURE_SAMPLE_EVENT && state == STATE_SUBSCRIBED){
+    if(sensor_event(ev) && state == STATE_SUBSCRIBED){
         // Publish something
         sensors_emulation(ev, *((int *)data));
     } 

@@ -2,8 +2,8 @@
 #define MOTOR_RPM_H_
 
 #define SAMPLING_INTERVAL         5
-#define SAMPLE_LOWER_BOUND        1500
-#define SAMPLE_UPPER_BOUND        1500
+#define RPM_LOWER_BOUND        1500
+#define RPM_UPPER_BOUND        1500
 
 PROCESS_NAME(motor_rpm_sensor_process);
 

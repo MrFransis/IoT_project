@@ -2,8 +2,8 @@
 #define FUEL_LEVEL_H_
 
 #define SAMPLING_INTERVAL         5
-#define SAMPLE_LOWER_BOUND        800
-#define SAMPLE_UPPER_BOUND        800
+#define FUEL_LOWER_BOUND        800
+#define FUEL_UPPER_BOUND        800
 
 PROCESS_NAME(fuel_level_sensor_process);
 

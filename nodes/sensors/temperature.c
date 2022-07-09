@@ -24,7 +24,7 @@ PROCESS_THREAD(temperature_sensor_process, ev, data)
   etimer_set(&et, CLOCK_SECOND*SAMPLING_INTERVAL);
   while(true) {
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
-    sample = sensor_rand_int(SAMPLE_LOWER_BOUND, SAMPLE_UPPER_BOUND);
+    sample = sensor_rand_int(TEMPERATURE_LOWER_BOUND, TEMPERATURE_UPPER_BOUND);
     process_post(subscriber, TEMPERATURE_SAMPLE_EVENT, &sample);
     etimer_reset(&et);
   }

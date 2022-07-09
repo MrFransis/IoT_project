@@ -2,7 +2,7 @@
 #include "contiki.h"
 #include "sys/etimer.h"
 #include "sys/log.h"
-#include "./temperature.h"
+#include "./motor-rpm.h"
 #include "./utils.h"
 #include <stdio.h>
 
@@ -24,7 +24,7 @@ PROCESS_THREAD(motor_rpm_sensor_process, ev, data)
   etimer_set(&et, CLOCK_SECOND);
   while(true) {
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
-    sample = sensor_rand_int(10, 100);
+    sample = sensor_rand_int(RPM_LOWER_BOUND, RPM_UPPER_BOUND);
     process_post(subscriber, MOTOR_RPM_SAMPLE_EVENT, &sample);
     etimer_reset(&et);
   }

@@ -57,10 +57,10 @@ public class MqttCollector implements MqttCallback{
 		// TODO Auto-generated method stub
 	}
 
-    public void publish(String content, String node){
+    public void publish(String content, int node){
         try{
             MqttMessage message = new MqttMessage(content.getBytes());
-            this.mqttClient.publish("topic" + node, message);
+            this.mqttClient.publish("alarm_" + node, message);
         }catch(MqttException e){
             e.printStackTrace();
         }
@@ -68,11 +68,31 @@ public class MqttCollector implements MqttCallback{
 
     public void messageArrived(String topic, MqttMessage message) throws Exception {
         System.out.println(String.format("[%s] %s", topic, new String(message.getPayload())));
-
+        
         String jsonMessage = new String(message.getPayload());
         Gson gson = new Gson();
         Message msg = gson.fromJson(jsonMessage, Message.class);
         mysqlMan.insertSample(msg);
+        switch(msg.getTopic()) {
+            case "temperature":
+                if(msg.getSample() > 10)
+                publish("temperature", msg.getMachineId());
+                break;
+            case "fuel_level":
+                if(msg.getSample() < 10)
+                publish("fuel_level", msg.getMachineId());
+                break;
+            case "coolant_temperature":
+                if(msg.getSample() > 10)
+                publish("coolant_temperature", msg.getMachineId());
+                break;
+            case "coolant":
+                if(msg.getSample() < 10)
+                publish("coolant", msg.getMachineId());
+                break;
+            default:
+              // code block
+          }
 	}
 
 	public void deliveryComplete(IMqttDeliveryToken token) {

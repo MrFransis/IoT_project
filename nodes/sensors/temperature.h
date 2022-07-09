@@ -2,8 +2,8 @@
 #define TEMPERATURE_H_
 
 #define SAMPLING_INTERVAL         5
-#define SAMPLE_LOWER_BOUND        150
-#define SAMPLE_UPPER_BOUND        160
+#define TEMPERATURE_LOWER_BOUND        150
+#define TEMPERATURE_UPPER_BOUND        160
 
 PROCESS_NAME(temperature_sensor_process);
 

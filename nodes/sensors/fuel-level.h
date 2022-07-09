@@ -1,7 +1,7 @@
 #ifndef FUEL_LEVEL_H_
 #define FUEL_LEVEL_H_
 
-#define FUEL_SAMPLING_INTERVAL        15
+#define FUEL_SAMPLING_INTERVAL        160
 #define FUEL_LOWER_BOUND        795
 #define FUEL_UPPER_BOUND        800
 

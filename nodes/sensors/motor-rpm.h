@@ -1,7 +1,7 @@
 #ifndef MOTOR_RPM_H_
 #define MOTOR_RPM_H_
 
-#define SAMPLING_INTERVAL         500
+#define RPM_SAMPLING_INTERVAL         180
 #define RPM_LOWER_BOUND        1500
 #define RPM_UPPER_BOUND        1500
 

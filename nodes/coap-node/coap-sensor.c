@@ -10,6 +10,12 @@
 #include "dev/etc/rgb-led/rgb-led.h"
 #include "./resources/res-coolant.h"
 #include "../sensors/coolant-level.h"
+#include "../sensors/coolant-temperature.h"
+#include "../sensors/energy-generated.h"
+#include "../sensors/fuel-level.h"
+#include "../sensors/motor-rpm.h"
+#include "../sensors/temperature.h"
+#include "../sensors/utils.h"
 
 #define SENSOR_ID_LENGTH 10
 #define STATE_INIT    		  0

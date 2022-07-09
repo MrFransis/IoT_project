@@ -24,7 +24,7 @@ PROCESS_THREAD(motor_rpm_sensor_process, ev, data)
   PROCESS_WAIT_EVENT_UNTIL(ev == MOTOR_RPM_EVENT_SUB);
   subscriber = (struct process *)data;
 
-  etimer_set(&et, CLOCK_SECOND);
+  etimer_set(&et, CLOCK_SECOND*RPM_SAMPLING_INTERVAL);
   while(true) {
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
     sample = sensor_rand_int(RPM_LOWER_BOUND, RPM_UPPER_BOUND);

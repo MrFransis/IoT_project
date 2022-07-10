@@ -26,7 +26,7 @@ PROCESS_THREAD(coolant_sensor_process, ev, data)
   etimer_set(&et, CLOCK_SECOND*COOLANT_SAMPLING_INTERVAL);
   while(true){
     PROCESS_YIELD();
-    if(ev == etimer_expired(&et)){
+    if(etimer_expired(&et)){
       if(sample > 0){
         sample -= 1;
       }

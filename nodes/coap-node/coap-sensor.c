@@ -102,7 +102,7 @@ init_monitor()
   process_start(&motor_rpm_sensor_process, NULL);
   process_post(&motor_rpm_sensor_process, MOTOR_RPM_EVENT_SUB, &coap_server);
 
-  res_fuel_level_activate();
+  /*res_fuel_level_activate();
   process_start(&fuel_level_sensor_process, NULL);
   process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_SUB, &coap_server);
 
@@ -117,6 +117,7 @@ init_monitor()
   res_coolant_activate();
   process_start(&coolant_sensor_process, NULL);
   process_post(&coolant_sensor_process, COOLANT_EVENT_SUB, &coap_server);
+  */
 }
 
 static bool

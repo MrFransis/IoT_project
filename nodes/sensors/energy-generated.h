@@ -1,7 +1,7 @@
 #ifndef ENERGY_GENERATED_H_
 #define ENERGY_GENERATED_H_
 
-#define SAMPLING_INTERVAL         500
+#define ENERGY_SAMPLING_INTERVAL         500
 #define ENERGY_LOWER_BOUND        1500 //kw
 #define ENERGY_UPPER_BOUND        1500
 

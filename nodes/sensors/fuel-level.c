@@ -23,10 +23,10 @@ PROCESS_THREAD(fuel_level_sensor_process, ev, data)
   PROCESS_WAIT_EVENT_UNTIL(ev == FUEL_SAMPLING_INTERVAL);
   subscriber = (struct process *)data;
 
-  etimer_set(&et, CLOCK_SECOND);
+  etimer_set(&et, CLOCK_SECOND*FUEL_SAMPLING_INTERVAL);
   while(true){
     PROCESS_YIELD();
-    if(ev == etimer_expired(&et)){
+    if(etimer_expired(&et)){
       if(sample > 0){
         sample -= 1;
       }

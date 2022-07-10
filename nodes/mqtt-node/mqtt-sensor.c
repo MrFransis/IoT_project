@@ -11,11 +11,8 @@
 #include "dev/etc/rgb-led/rgb-led.h"
 #include "os/sys/log.h"
 #include "mqtt-sensor.h"
-#include "../sensors/coolant-level.h"
-#include "../sensors/coolant-temperature.h"
 #include "../sensors/energy-generated.h"
 #include "../sensors/fuel-level.h"
-#include "../sensors/motor-rpm.h"
 #include "../sensors/temperature.h"
 #include "../sensors/utils.h"
 
@@ -108,13 +105,7 @@ pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
   if(strcmp(topic, sub_topic) == 0) {
     printf("Received Actuator command\n");
 	  printf("%s\n", chunk);
-    if(strcmp((const char *)chunk, "coolant_temp")==0){
-      //rgb_led_set(RGB_LED_RED);
-      process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_ALERT, (int*) ON);
-    }else if (strcmp((const char *)chunk, "coolant_temp_off")==0){
-      //rgb_led_set(RGB_LED_RED);
-      process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_ALERT, (int*) OFF);
-    }else if (strcmp((const char *)chunk, "temperature")==0){
+    if(strcmp((const char *)chunk, "temperature")==0){
       //rgb_led_set(RGB_LED_RED);
       process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, (int*) ON);
     }else if (strcmp((const char *)chunk, "temperature_off")==0){
@@ -122,8 +113,6 @@ pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
       process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, (int*) OFF);
     }else if (strcmp((const char *)chunk, "fuel_lvl")==0){
       //rgb_led_set(RGB_LED_BLUE);
-    }else if (strcmp((const char *)chunk, "coolant_lvl")==0){
-      //rgb_led_set(RGB_LED_RED);
     }else{
         printf("UNKNOWN COMMAND\n");
     }
@@ -163,18 +152,11 @@ static void
 sensors_emulation(process_event_t event, int sample)
 { 
   if(event == TEMPERATURE_SAMPLE_EVENT){
-    publish("temperature", sample);
-  }else if(event == MOTOR_RPM_SAMPLE_EVENT){
-    publish("rpm", sample);
+    publish("temperature", sample);;
   }else if(event == FUEL_LEVEL_SAMPLE_EVENT){
     publish("fuel_level", sample);
   }else if(event == ENERGY_SAMPLE_EVENT){
     publish("energy_generated", sample);
-  }else if(event == COOLANT_TEMPERATURE_SAMPLE_EVENT){
-    publish("coolant_temperature", sample);
-  }else if(event == COOLANT_SAMPLE_EVENT){
-    publish("coolant", sample);
-  }
 }
 
 static void
@@ -183,31 +165,19 @@ load_sensors_processes()
   process_start(&temperature_sensor_process, NULL);
   process_post(&temperature_sensor_process, TEMPERATURE_EVENT_SUB, &mqtt_client_process);
 
-  //process_start(&motor_rpm_sensor_process, NULL);
-  //process_post(&motor_rpm_sensor_process, MOTOR_RPM_EVENT_SUB, &mqtt_client_process);
-
   process_start(&fuel_level_sensor_process, NULL);
   process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_SUB, &mqtt_client_process);
 
   process_start(&energy_sensor_process, NULL);
   process_post(&energy_sensor_process, ENERGY_EVENT_SUB, &mqtt_client_process);
-
-  //process_start(&coolant_temperature_sensor_process, NULL);
-  //process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_SUB, &mqtt_client_process);
-
-  //process_start(&coolant_sensor_process, NULL);
-  //process_post(&coolant_sensor_process, COOLANT_EVENT_SUB, &mqtt_client_process);
 }
 
 static bool
 sensor_event(process_event_t event)
 {
     if(event == TEMPERATURE_SAMPLE_EVENT
-       || event == MOTOR_RPM_SAMPLE_EVENT
        || event == FUEL_LEVEL_SAMPLE_EVENT
-       || event == ENERGY_SAMPLE_EVENT
-       || event == COOLANT_TEMPERATURE_SAMPLE_EVENT
-       || event == COOLANT_SAMPLE_EVENT) {
+       || event == ENERGY_SAMPLE_EVENT) {
     return true;
   }
   return false;
@@ -327,9 +297,6 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 		  }
 		  
 		  if(state==STATE_CONNECTED){
-        //start sensors
-        //led color to operational
-        //rgb_led_set(RGB_LED_GREEN);
 			  // Subscribe to a topic
         char topic[64];
         sprintf(topic, "alarm_%d", node_id);
@@ -358,7 +325,6 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
       sensors_emulation(ev, *((int *)data));
     }else if(ev == button_hal_press_event && state == STATE_SUBSCRIBED){
       process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_REFILL, "");
-      process_post(&coolant_sensor_process, COOLANT_EVENT_REFILL, "");
     }
 
   }

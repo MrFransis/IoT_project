@@ -24,12 +24,13 @@ public class CoapRegistration extends CoapResource{
         System.out.println(sensorIp);
         //response?
 
-        Sensor sensor = new Sensor(sensorIp.getHostAddress(), "coolant");
+        Sensor sensor = new Sensor(sensorIp.getHostAddress(), "temperature");
         observe(sensor);
     }
 
     private static void observe(Sensor s) {
 		CoapCollector observer = new CoapCollector(s);
+        System.out.println("New CoapCollector created");
 		observer.startObserving();
 	}
 }

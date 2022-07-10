@@ -36,7 +36,7 @@ PROCESS_THREAD(coolant_temperature_sensor_process, ev, data)
       }else if(alert == ON){
         sample -= 1;
       }
-    process_post(subscriber, COOLANT_TEMPERATURE_SAMPLE_EVENT, &sample);
+      process_post(subscriber, COOLANT_TEMPERATURE_SAMPLE_EVENT, &sample);
       etimer_reset(&et);
     }else if(ev == COOLANT_TEMPERATURE_EVENT_ALERT){
       alert = *((int *)data);

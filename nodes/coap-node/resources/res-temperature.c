@@ -23,7 +23,7 @@ EVENT_RESOURCE(res_temperature,
         NULL,
         NULL,
         NULL,
-		res_event_handler);
+		    res_event_handler);
 
 static void
 res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)

@@ -19,8 +19,10 @@ public class MysqlManager {
   
         String timestamp = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
 
-        String query = "INSERT INTO "+ msg.getTopic() + " (sample, unit, machineid, timestamp) "
-        + " VALUES ('"+msg.getSample()+"', '"+msg.getUnit()+"','"+msg.getMachineId()+"','"+timestamp+"');";
+        System.out.println(msg.getTopic() + " " + msg.getMachineId() + " " + msg.getSample() + " " + msg.getUnit());
+
+        String query = "INSERT INTO "+ msg.getTopic() + " (sample, unit, machineid) "
+        + " VALUES ('"+msg.getSample()+"', '"+msg.getUnit()+"','"+msg.getMachineId()+"');";
         try{
             PreparedStatement ps = conn.prepareStatement(query);
 			ps.executeUpdate();

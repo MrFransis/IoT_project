@@ -15,16 +15,12 @@
 #include "../sensors/fuel-level.h"
 #include "../sensors/motor-rpm.h"
 #include "../sensors/temperature.h"
-<<<<<<< HEAD
-#include "../sensors/utils.h"
-=======
 #include "./resources/res-coolant-temperature.h"
 #include "./resources/res-coolant.h"
 #include "./resources/res-energy-generated.h"
 #include "./resources/res-fuel-level.h"
 #include "./resources/res-motor-rpm.h"
 #include "./resources/res-temperature.h"
->>>>>>> 5459acba912b75338cc2f54dda7b14629ccad665
 
 #define SENSOR_ID_LENGTH 10
 #define STATE_INIT    		  0
@@ -51,10 +47,10 @@ extern coap_resource_t res_coolant;
 static void 
 sensors_emulation(process_event_t event, int sample)
 {
-  printf("%d /n", sample);
+  printf("Simulazione %d sample %d \n", event, sample);
   if (event == TEMPERATURE_SAMPLE_EVENT){
     res_temperature_update(sample, node_id);
-  } else if (event == MOTOR_RPM_SAMPLE_EVENT) {
+  }/* else if (event == MOTOR_RPM_SAMPLE_EVENT) {
     res_motor_rpm_update(sample, node_id);
   } else if (event == FUEL_LEVEL_SAMPLE_EVENT) {
     res_fuel_level_update(sample, node_id);
@@ -65,6 +61,7 @@ sensors_emulation(process_event_t event, int sample)
   } else if (event == COOLANT_SAMPLE_EVENT) {
     res_coolant_update(sample, node_id);
   }
+  */
 }
 
 /*---------------------------------------------------------------------------*/
@@ -102,11 +99,11 @@ init_monitor()
   process_start(&temperature_sensor_process, NULL);
   process_post(&temperature_sensor_process, TEMPERATURE_EVENT_SUB, &coap_server);
 
-  res_motor_rpm_activate();
+  /*res_motor_rpm_activate();
   process_start(&motor_rpm_sensor_process, NULL);
   process_post(&motor_rpm_sensor_process, MOTOR_RPM_EVENT_SUB, &coap_server);
 
-  /*res_fuel_level_activate();
+  res_fuel_level_activate();
   process_start(&fuel_level_sensor_process, NULL);
   process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_SUB, &coap_server);
 
@@ -127,12 +124,14 @@ init_monitor()
 static bool
 sensor_event(process_event_t event)
 {
-    if(event == TEMPERATURE_SAMPLE_EVENT
-       || event == MOTOR_RPM_SAMPLE_EVENT
-       || event == FUEL_LEVEL_SAMPLE_EVENT
-       || event == ENERGY_SAMPLE_EVENT
-       || event == COOLANT_TEMPERATURE_SAMPLE_EVENT
-       || event == COOLANT_SAMPLE_EVENT) {
+  printf("Event %d, %d\n", event, TEMPERATURE_SAMPLE_EVENT);
+  if(event == TEMPERATURE_SAMPLE_EVENT
+      || event == MOTOR_RPM_SAMPLE_EVENT
+      || event == FUEL_LEVEL_SAMPLE_EVENT
+      || event == ENERGY_SAMPLE_EVENT
+      || event == COOLANT_TEMPERATURE_SAMPLE_EVENT
+      || event == COOLANT_SAMPLE_EVENT) {
+    printf("Event found\n");
     return true;
   }
   return false;
@@ -165,6 +164,7 @@ PROCESS_THREAD(coap_server, ev, data)
     }
 
     if(sensor_event(ev) && state == COAP_MONITOR_STATE_OPERATIONAL){
+      printf("Emulating %d \n", *((int *)data));
       sensors_emulation(ev, *((int *)data));
     }
   }                             

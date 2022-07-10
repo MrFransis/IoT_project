@@ -96,22 +96,8 @@ public class MqttCollector implements MqttCallback{
                     publish("fuel_level", msg.getMachineId());
                 }
                 break;
-            case "coolant_temperature":
-                if(msg.getSample() > 70 && !coolantWarningNodes.contains((Integer) msg.getMachineId())){
-                    publish("coolant_temperature", msg.getMachineId());
-                    coolantWarningNodes.add((Integer) msg.getMachineId());
-                }else if(msg.getSample() < 70 && coolantWarningNodes.contains((Integer) msg.getMachineId())){
-                    publish("coolant_temperature_off", msg.getMachineId());
-                    coolantWarningNodes.remove((Integer) msg.getMachineId());
-                }
-                break;
-            case "coolant":
-                if(msg.getSample() < 25){
-                    publish("coolant", msg.getMachineId());
-                }
-                break;
             default:
-              // code block
+                break;
           }
 	}
 

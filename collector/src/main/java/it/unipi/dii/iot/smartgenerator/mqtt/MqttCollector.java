@@ -71,16 +71,11 @@ public class MqttCollector implements MqttCallback{
     }
 
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-        System.out.println(String.format("[%s] %s", topic, new String(message.getPayload())));
-        System.out.println("1");
+        //System.out.println(String.format("[%s] %s", topic, new String(message.getPayload())));
         String jsonMessage = new String(message.getPayload());
-        System.out.println("2");
         Gson gson = new Gson();
-        System.out.println("3");
         Message msg = gson.fromJson(jsonMessage, Message.class);
-        System.out.println("4");
         mysqlMan.insertSample(msg);
-        System.out.println("sono qui");
         switch(msg.getTopic()) {
             case "temperature":
                 if(msg.getSample() > 160 && !tempWarningNodes.contains((Integer) msg.getMachineId())){

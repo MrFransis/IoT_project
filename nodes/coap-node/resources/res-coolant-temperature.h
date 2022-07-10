@@ -1,8 +1,0 @@
-#ifndef RES_COOLANT_TEMPERATURE_H_
-#define RES_COOLANT_TEMPERATURE_H_
-
-void res_coolant_temperature_activate(void);
-
-void res_coolant_temperature_update(int sample, int node_id);
-
-#endif

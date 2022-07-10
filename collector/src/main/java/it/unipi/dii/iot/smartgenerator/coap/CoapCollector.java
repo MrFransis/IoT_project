@@ -26,16 +26,12 @@ public class CoapCollector {
     Boolean sensorMaxValueExceeded;
     String resource;
 
-    public static final int COOLANT_LEVEL_THRESHOLD = 30;
-    public static final int COOLANT_TEMPERATURE_THRESHOLD = 70;
     public static final int FUEL_LEVEL_THRESHOLD = 800;
-    public static final int TEMPERATURE_THRESHOLD = 150;
+    public static final int TEMPERATURE_THRESHOLD = 160;
 
     public static final int NO_ERROR = 0;
-    public static final int COOLANT_TEMPERATURE_ERROR = 1;
-    public static final int COOLANT_LEVEL_ERROR = 2;
-    public static final int FUEL_LEVEL_ERROR = 3;
-    public static final int TEMPERATURE_ERROR = 4;
+    public static final int FUEL_LEVEL_ERROR = 1;
+    public static final int TEMPERATURE_ERROR = 2;
 
     public CoapCollector(Sensor s){
         client = new CoapClient(s.getUri());
@@ -64,20 +60,6 @@ public class CoapCollector {
                 int sensorState = -1;
 
                 switch (topic) {
-                    case "coolant_temperature":
-                        if (sample > COOLANT_TEMPERATURE_THRESHOLD) {
-                            currentMaxValueExceeded = true;
-                            sensorMaxValueExceeded = true;
-                            sensorState = COOLANT_TEMPERATURE_ERROR;
-                        }
-                        break;
-                    case "coolant":
-                        if (sample > COOLANT_LEVEL_THRESHOLD) {
-                            currentMaxValueExceeded = true;
-                            sensorMaxValueExceeded = true;
-                            sensorState = COOLANT_LEVEL_ERROR;
-                        }
-                        break;
                     case "fuel_level":
                         if (sample > FUEL_LEVEL_THRESHOLD) {
                             currentMaxValueExceeded = true;

@@ -49,9 +49,11 @@ public class CoapCollector {
             relation = client.observe(new CoapHandler() {
             public void onLoad(CoapResponse response) {
                 String jsonMessage = new String(response.getResponseText());
-                System.out.println("Messaggio " + jsonMessage);
                 Gson gson = new Gson();
                 Message msg = gson.fromJson(jsonMessage, Message.class);
+                if (msg.getSample() == -1) {
+                    return;
+                }
                 mysqlMan.insertSample(msg);
                 
                 String topic = msg.getTopic();

@@ -18,7 +18,6 @@
 #include "../sensors/motor-rpm.h"
 #include "../sensors/temperature.h"
 #include "../sensors/utils.h"
-//#include "ieee-addr.h"
 
 #include <string.h>
 #include <strings.h>
@@ -75,6 +74,7 @@ static char broker_address[CONFIG_IP_ADDR_STR_LEN];
 #define BUFFER_SIZE 64
 
 static char client_id[BUFFER_SIZE];
+static char pub_topic[BUFFER_SIZE];
 static char sub_topic[BUFFER_SIZE];
 
 static int node_id;
@@ -132,11 +132,14 @@ pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
 }
 /*---------------------------------------------------------------------------*/
 static void 
-publish(char* pub_topic, int sample)
+publish(char* topic, int sample)
 {
-  json_sample(app_buffer, APP_BUFFER_SIZE, "temperature", sample, "C", node_id);
+  sprintf(pub_topic, "%s", topic);
+  char json_msg[APP_BUFFER_SIZE];
+  json_sample(json_msg, APP_BUFFER_SIZE, pub_topic, sample, "C", node_id);
+  memset(app_buffer, 0, APP_BUFFER_SIZE);
+  strcpy(app_buffer, json_msg);
   printf("%s \n", app_buffer);
-  printf("lenght: %d \n", strlen(app_buffer));
   int status = mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer, strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
   
   switch(status) {
@@ -158,8 +161,7 @@ publish(char* pub_topic, int sample)
 
 static void 
 sensors_emulation(process_event_t event, int sample)
-{
-  //Engine temperature 
+{ 
   if(event == TEMPERATURE_SAMPLE_EVENT){
     publish("temperature", sample);
   }else if(event == MOTOR_RPM_SAMPLE_EVENT){
@@ -180,16 +182,15 @@ load_sensors_processes()
 {
   process_start(&temperature_sensor_process, NULL);
   process_post(&temperature_sensor_process, TEMPERATURE_EVENT_SUB, &mqtt_client_process);
-  printf("1\n");
 
   //process_start(&motor_rpm_sensor_process, NULL);
   //process_post(&motor_rpm_sensor_process, MOTOR_RPM_EVENT_SUB, &mqtt_client_process);
 
-  //process_start(&fuel_level_sensor_process, NULL);
-  //process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_SUB, &mqtt_client_process);
+  process_start(&fuel_level_sensor_process, NULL);
+  process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_SUB, &mqtt_client_process);
 
-  //process_start(&energy_sensor_process, NULL);
-  //process_post(&energy_sensor_process, ENERGY_EVENT_SUB, &mqtt_client_process);
+  process_start(&energy_sensor_process, NULL);
+  process_post(&energy_sensor_process, ENERGY_EVENT_SUB, &mqtt_client_process);
 
   //process_start(&coolant_temperature_sensor_process, NULL);
   //process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_SUB, &mqtt_client_process);
@@ -279,8 +280,8 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 {
 
   PROCESS_BEGIN();
+  //rgb_led_set(RGB_LED_GREEN);
   printf("MQTT Client Process\n");
-  load_sensors_processes();
   // Initialize the ClientID as MAC address
   snprintf(client_id, BUFFER_SIZE, "%02x%02x%02x%02x%02x%02x",
                      linkaddr_node_addr.u8[0], linkaddr_node_addr.u8[1],
@@ -293,7 +294,9 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 
 	  
   node_id = linkaddr_node_addr.u8[7];
-  //node_id = IEEE_ADDR_NODE_ID
+  
+  load_sensors_processes();
+  
   state=STATE_INIT;
 				    
   // Initialize periodic timer to check the status 
@@ -307,9 +310,8 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 	      ev == PROCESS_EVENT_POLL){
 			  			  
 		  if(state==STATE_INIT){
-			  if(have_connectivity()==true){  
+			  if(have_connectivity()==true) 
 				  state = STATE_NET_OK;
-        }
 		  } 
 		  
 		  if(state == STATE_NET_OK){
@@ -337,29 +339,26 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 
 			  printf("Subscribing!\n");
 			  if(status == MQTT_STATUS_OUT_QUEUE_FULL) {
-				LOG_ERR("Tried to subscribe but command queue was full!\n");
-				PROCESS_EXIT();
+				  LOG_ERR("Tried to subscribe but command queue was full!\n");
+				  PROCESS_EXIT();
 			  }
 			  
 			  state = STATE_SUBSCRIBED;
+
 		  }else if ( state == STATE_DISCONNECTED ){
         LOG_ERR("Disconnected form MQTT broker\n");	
-        //state = STATE_INIT;
+        state = STATE_NET_OK;
         // Recover from error
       }
       
       etimer_set(&periodic_timer, STATE_MACHINE_PERIODIC);
       
-    }
-    if(sensor_event(ev) && state == STATE_SUBSCRIBED){
+    }else if(sensor_event(ev) && state == STATE_SUBSCRIBED){
       // Publish something
-      printf("Event: %d, data: %d \n", ev, *((int *)data));
       sensors_emulation(ev, *((int *)data));
-    }
-    if(ev == button_hal_press_event && state == STATE_SUBSCRIBED){
+    }else if(ev == button_hal_press_event && state == STATE_SUBSCRIBED){
       process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_REFILL, "");
       process_post(&coolant_sensor_process, COOLANT_EVENT_REFILL, "");
-      //rgb_led_set(RGB_LED_RED);
     }
 
   }

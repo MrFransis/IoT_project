@@ -8,13 +8,13 @@
 
 process_event_t ENERGY_SAMPLE_EVENT;
 process_event_t ENERGY_EVENT_SUB;
-struct process *subscriber;
-int sample;
 
 PROCESS(energy_sensor_process, "Energy sensor process");
 
 PROCESS_THREAD(energy_sensor_process, ev, data)
 {
+  static struct process *subscriber;
+  static int sample;
   static struct etimer et;
   PROCESS_BEGIN();
   ENERGY_SAMPLE_EVENT = process_alloc_event();

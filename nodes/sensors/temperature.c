@@ -12,15 +12,16 @@
 process_event_t TEMPERATURE_SAMPLE_EVENT;
 process_event_t TEMPERATURE_EVENT_SUB;
 process_event_t TEMPERATURE_EVENT_ALERT;
-struct process *subscriber;
-int sample;
-bool alert;
+
 
 PROCESS(temperature_sensor_process, "Temperature sensor process");
 
 PROCESS_THREAD(temperature_sensor_process, ev, data)
 {
   static struct etimer et;
+  static struct process *subscriber;
+  static int sample;
+  static bool alert;
   PROCESS_BEGIN();
 
   alert = OFF;
@@ -37,7 +38,6 @@ PROCESS_THREAD(temperature_sensor_process, ev, data)
       }else if(alert == ON){
         sample -= 1;
       }
-      printf("Sample_ %d", sample);
       process_post(subscriber, TEMPERATURE_SAMPLE_EVENT, &sample);
       etimer_reset(&et);
     }else if(ev == TEMPERATURE_EVENT_ALERT){

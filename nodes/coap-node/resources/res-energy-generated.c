@@ -32,6 +32,7 @@ res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buff
   int length;
 
   json_sample(json_response, 512, "energy_generated", energy_generated_sample, "L", node_id);
+  printf(json_response);
   length = strlen(json_response);
   memcpy(buffer, json_response, length);
 

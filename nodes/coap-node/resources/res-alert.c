@@ -4,11 +4,8 @@
 #include "coap-engine.h"
 #include "dev/etc/rgb-led/rgb-led.h"
 #include "../../sensors/utils.h"
-#include "../../sensors/coolant-level.h"
-#include "../../sensors/coolant-temperature.h"
 #include "../../sensors/energy-generated.h"
 #include "../../sensors/fuel-level.h"
-#include "../../sensors/motor-rpm.h"
 #include "../../sensors/temperature.h"
 
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
@@ -18,10 +15,8 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response, 
 static uint8_t state;
 
 #define NO_ERROR    		              0
-#define COOLANT_TEMPERATURE_ERROR     1
-#define COOLANT_LEVEL_ERROR           2
-#define FUEL_LEVEL_ERROR              3
-#define TEMPERATURE_ERROR             4
+#define FUEL_LEVEL_ERROR              1
+#define TEMPERATURE_ERROR             2
 
 #define OFF 0
 #define ON 1
@@ -65,16 +60,8 @@ res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buf
         if (postState == NO_ERROR) {
           printf("Riattivo sensori...\n");
           int data = OFF;
-          switch (state)
-          {
-          case COOLANT_TEMPERATURE_ERROR:
-            process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_ALERT, &data);
-            break;
-          case TEMPERATURE_ERROR:
+          if (state == TEMPERATURE_ERROR) {
             process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, &data);
-            break;
-          default:
-            break;
           }
           //rimetto led verde
           //rgb_led_set(RGB_LED_GREEN);
@@ -84,19 +71,10 @@ res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buf
           int data = ON;
           switch (postState)
           {
-          case COOLANT_TEMPERATURE_ERROR:
-            process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_ALERT, &data);
-            //rgb_led_set(RGB_LED_MAGENTA);
-            printf("Led magenta\n");
-            break;
           case TEMPERATURE_ERROR:
             process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, &data);
             //rgb_led_set(RGB_LED_RED);
             printf("Led rosso\n");
-            break;
-          case COOLANT_LEVEL_ERROR:
-            //rgb_led_set(RGB_LED_BLUE);
-            printf("Led blue\n");
             break;
           case FUEL_LEVEL_ERROR:
             //rgb_led_set(RGB_LED_YELLOW);

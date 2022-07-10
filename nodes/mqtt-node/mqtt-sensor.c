@@ -135,6 +135,8 @@ static void
 publish(char* pub_topic, int sample)
 {
   json_sample(app_buffer, APP_BUFFER_SIZE, "temperature", sample, "C", node_id);
+  printf("%s \n", app_buffer);
+  printf("lenght: %d \n", strlen(app_buffer));
   int status = mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer, strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
   
   switch(status) {
@@ -157,7 +159,6 @@ publish(char* pub_topic, int sample)
 static void 
 sensors_emulation(process_event_t event, int sample)
 {
-  printf("%d /n", sample);
   //Engine temperature 
   if(event == TEMPERATURE_SAMPLE_EVENT){
     publish("temperature", sample);
@@ -179,21 +180,22 @@ load_sensors_processes()
 {
   process_start(&temperature_sensor_process, NULL);
   process_post(&temperature_sensor_process, TEMPERATURE_EVENT_SUB, &mqtt_client_process);
+  printf("1\n");
 
-  process_start(&motor_rpm_sensor_process, NULL);
-  process_post(&motor_rpm_sensor_process, MOTOR_RPM_EVENT_SUB, &mqtt_client_process);
+  //process_start(&motor_rpm_sensor_process, NULL);
+  //process_post(&motor_rpm_sensor_process, MOTOR_RPM_EVENT_SUB, &mqtt_client_process);
 
-  process_start(&fuel_level_sensor_process, NULL);
-  process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_SUB, &mqtt_client_process);
+  //process_start(&fuel_level_sensor_process, NULL);
+  //process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_SUB, &mqtt_client_process);
 
-  process_start(&energy_sensor_process, NULL);
-  process_post(&energy_sensor_process, ENERGY_EVENT_SUB, &mqtt_client_process);
+  //process_start(&energy_sensor_process, NULL);
+  //process_post(&energy_sensor_process, ENERGY_EVENT_SUB, &mqtt_client_process);
 
-  process_start(&coolant_temperature_sensor_process, NULL);
-  process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_SUB, &mqtt_client_process);
+  //process_start(&coolant_temperature_sensor_process, NULL);
+  //process_post(&coolant_temperature_sensor_process, COOLANT_TEMPERATURE_EVENT_SUB, &mqtt_client_process);
 
-  process_start(&coolant_sensor_process, NULL);
-  process_post(&coolant_sensor_process, COOLANT_EVENT_SUB, &mqtt_client_process);
+  //process_start(&coolant_sensor_process, NULL);
+  //process_post(&coolant_sensor_process, COOLANT_EVENT_SUB, &mqtt_client_process);
 }
 
 static bool
@@ -278,7 +280,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 
   PROCESS_BEGIN();
   printf("MQTT Client Process\n");
-
+  load_sensors_processes();
   // Initialize the ClientID as MAC address
   snprintf(client_id, BUFFER_SIZE, "%02x%02x%02x%02x%02x%02x",
                      linkaddr_node_addr.u8[0], linkaddr_node_addr.u8[1],
@@ -292,7 +294,6 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 	  
   node_id = linkaddr_node_addr.u8[7];
   //node_id = IEEE_ADDR_NODE_ID
-
   state=STATE_INIT;
 				    
   // Initialize periodic timer to check the status 
@@ -306,8 +307,9 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 	      ev == PROCESS_EVENT_POLL){
 			  			  
 		  if(state==STATE_INIT){
-			 if(have_connectivity()==true)  
-				 state = STATE_NET_OK;
+			  if(have_connectivity()==true){  
+				  state = STATE_NET_OK;
+        }
 		  } 
 		  
 		  if(state == STATE_NET_OK){
@@ -324,11 +326,8 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 		  
 		  if(state==STATE_CONNECTED){
         //start sensors
-        load_sensors_processes();
-        printf("ok\n");
         //led color to operational
         //rgb_led_set(RGB_LED_GREEN);
-
 			  // Subscribe to a topic
         char topic[64];
         sprintf(topic, "alarm_%d", node_id);
@@ -345,7 +344,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 			  state = STATE_SUBSCRIBED;
 		  }else if ( state == STATE_DISCONNECTED ){
         LOG_ERR("Disconnected form MQTT broker\n");	
-        state = STATE_INIT;
+        //state = STATE_INIT;
         // Recover from error
       }
       
@@ -354,8 +353,9 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
     }
     if(sensor_event(ev) && state == STATE_SUBSCRIBED){
       // Publish something
+      printf("Event: %d, data: %d \n", ev, *((int *)data));
       sensors_emulation(ev, *((int *)data));
-    } 
+    }
     if(ev == button_hal_press_event && state == STATE_SUBSCRIBED){
       process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_REFILL, "");
       process_post(&coolant_sensor_process, COOLANT_EVENT_REFILL, "");

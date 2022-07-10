@@ -15,12 +15,16 @@
 #include "../sensors/fuel-level.h"
 #include "../sensors/motor-rpm.h"
 #include "../sensors/temperature.h"
+<<<<<<< HEAD
+#include "../sensors/utils.h"
+=======
 #include "./resources/res-coolant-temperature.h"
 #include "./resources/res-coolant.h"
 #include "./resources/res-energy-generated.h"
 #include "./resources/res-fuel-level.h"
 #include "./resources/res-motor-rpm.h"
 #include "./resources/res-temperature.h"
+>>>>>>> 5459acba912b75338cc2f54dda7b14629ccad665
 
 #define SENSOR_ID_LENGTH 10
 #define STATE_INIT    		  0

@@ -27,7 +27,7 @@ PROCESS_THREAD(coolant_temperature_sensor_process, ev, data)
   PROCESS_WAIT_EVENT_UNTIL(ev == COOLANT_TEMPERATURE_EVENT_SUB);
   subscriber = (struct process *)data;
 
-  etimer_set(&et, CLOCK_SECOND*COOLANT_TEMPERATURE_SAMPLING_INTERVAL);
+  etimer_set(&et, CLOCK_SECOND*COOLANT_TEMP_SAMPLING_INTERVAL);
   while(true) {
     PROCESS_YIELD();
     if(etimer_expired(&et)){

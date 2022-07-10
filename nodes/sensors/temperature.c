@@ -22,11 +22,12 @@ PROCESS_THREAD(temperature_sensor_process, ev, data)
 {
   static struct etimer et;
   PROCESS_BEGIN();
+
   alert = OFF;
   TEMPERATURE_SAMPLE_EVENT = process_alloc_event();
   PROCESS_WAIT_EVENT_UNTIL(ev == TEMPERATURE_EVENT_SUB);
-  subscriber = (struct process *)data;
 
+  subscriber = (struct process *)data;
   etimer_set(&et, CLOCK_SECOND*TEMPERATURE_SAMPLING_INTERVAL);
   while(true) {
     PROCESS_YIELD();
@@ -36,6 +37,7 @@ PROCESS_THREAD(temperature_sensor_process, ev, data)
       }else if(alert == ON){
         sample -= 1;
       }
+      printf("Sample_ %d", sample);
       process_post(subscriber, TEMPERATURE_SAMPLE_EVENT, &sample);
       etimer_reset(&et);
     }else if(ev == TEMPERATURE_EVENT_ALERT){

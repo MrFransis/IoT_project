@@ -30,6 +30,7 @@ PROCESS_THREAD(coolant_sensor_process, ev, data)
       if(sample > 0){
         sample -= 1;
       }
+      printf("%d\n", sample);
       process_post(subscriber, COOLANT_SAMPLE_EVENT, &sample);
       etimer_reset(&et);
     }else if(ev == COOLANT_EVENT_REFILL){

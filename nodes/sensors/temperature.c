@@ -12,15 +12,16 @@
 process_event_t TEMPERATURE_SAMPLE_EVENT;
 process_event_t TEMPERATURE_EVENT_SUB;
 process_event_t TEMPERATURE_EVENT_ALERT;
-struct process *subscriber;
-int sample;
-bool alert;
+
 
 PROCESS(temperature_sensor_process, "Temperature sensor process");
 
 PROCESS_THREAD(temperature_sensor_process, ev, data)
 {
   static struct etimer et;
+  static struct process *subscriber;
+  static int sample;
+  static bool alert;
   PROCESS_BEGIN();
 
   printf("Temperature process started");

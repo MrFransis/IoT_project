@@ -124,13 +124,11 @@ static void
 publish(char* topic, int sample)
 {
   sprintf(pub_topic, "%s", topic);
-  char json_msg[APP_BUFFER_SIZE];
-  json_sample(json_msg, APP_BUFFER_SIZE, pub_topic, sample, "C", node_id);
   memset(app_buffer, 0, APP_BUFFER_SIZE);
-  strcpy(app_buffer, json_msg);
+  json_sample(app_buffer, APP_BUFFER_SIZE, pub_topic, sample, node_id);
   printf("%s \n", app_buffer);
-  int status = mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer, strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
-  
+  /*int status = */mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer, strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
+  /*
   switch(status) {
   case MQTT_STATUS_OK:
     return;
@@ -146,19 +144,20 @@ publish(char* topic, int sample)
     printf("Publishing failed. Error: unknown.\n");
     return;
   }
+  */
 }
 
 static void 
 sensors_emulation(process_event_t event, int sample)
 { 
   if(event == TEMPERATURE_SAMPLE_EVENT){
-    publish("temperature", sample);;
+    publish("temperature", sample);
   }else if(event == FUEL_LEVEL_SAMPLE_EVENT){
     publish("fuel_level", sample);
   }else if(event == ENERGY_SAMPLE_EVENT){
     publish("energy_generated", sample);
+  }
 }
-
 static void
 load_sensors_processes()
 {

@@ -17,9 +17,9 @@ public class MysqlManager {
     public boolean insertSample(Message msg) {
         System.out.println("Saving data record ...");
   
-        String timestamp = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
+        //String timestamp = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(Calendar.getInstance().getTime());
 
-        System.out.println(msg.getTopic() + " " + msg.getMachineId() + " " + msg.getSample() + " " + msg.getUnit());
+        //System.out.println(msg.getTopic() + " " + msg.getMachineId() + " " + msg.getSample() + " " + msg.getUnit());
 
         String query = "INSERT INTO "+ msg.getTopic() + " (sample, unit, machineid) "
         + " VALUES ('"+msg.getSample()+"', '"+msg.getUnit()+"','"+msg.getMachineId()+"');";

@@ -98,7 +98,6 @@ init_monitor()
 static bool
 sensor_event(process_event_t event)
 {
-  printf("Event %d, %d\n", event, TEMPERATURE_SAMPLE_EVENT);
   if(event == TEMPERATURE_SAMPLE_EVENT
       || event == FUEL_LEVEL_SAMPLE_EVENT
       || event == ENERGY_SAMPLE_EVENT) {

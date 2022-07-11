@@ -8,6 +8,7 @@
 #include "os/sys/etimer.h"
 #include "os/net/ipv6/uip-ds6.h"
 #include "os/dev/leds.h"
+#include "dev/button-hal.h"
 #include "../sensors/energy-generated.h"
 #include "../sensors/fuel-level.h"
 #include "../sensors/temperature.h"
@@ -145,6 +146,9 @@ PROCESS_THREAD(coap_server, ev, data)
 
     if(sensor_event(ev) && state == COAP_MONITOR_STATE_OPERATIONAL){
       sensors_emulation(ev, *((int *)data));
+    } else if(ev == button_hal_press_event && state == COAP_MONITOR_STATE_OPERATIONAL){
+      leds_off(LEDS_LED2);
+      process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_REFILL, NULL);
     }
   }                             
 

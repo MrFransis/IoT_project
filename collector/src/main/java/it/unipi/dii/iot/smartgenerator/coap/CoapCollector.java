@@ -1,5 +1,7 @@
 package it.unipi.dii.iot.smartgenerator.coap;
 
+import javax.xml.ws.Response;
+
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapObserveRelation;
@@ -26,6 +28,8 @@ public class CoapCollector {
     Boolean temperatureMaxValueExceeded;
     Boolean fuelLevelMinValueExceeded;
     String resource;
+    String nodeIp;
+    int sensorState;
 
     public static final int FUEL_LEVEL_THRESHOLD = 25;
     public static final int TEMPERATURE_THRESHOLD = 160;
@@ -36,6 +40,7 @@ public class CoapCollector {
 
     public CoapCollector(Sensor s){
         client = new CoapClient(s.getUri());
+        nodeIp = s.getNodeIp();
         mysqlMan = new MysqlManager(MysqlDriver.getInstance().openConnection());
         alertClient = new CoapClient("coap://[" + s.getNodeIp() + "]/alert");
         System.out.println(alertClient);
@@ -63,7 +68,7 @@ public class CoapCollector {
                 
                 String topic = msg.getTopic();
                 int sample = msg.getSample();
-                int sensorState = -1;
+                sensorState = -1;
 
                 switch (topic) {
                     case "fuel_level":
@@ -77,7 +82,7 @@ public class CoapCollector {
                         }
                         break;
                     case "temperature":
-                        if (sample > 150) {
+                        if (sample > TEMPERATURE_THRESHOLD) {
                             System.out.println("Temperature max threshold exceeded!");
                             temperatureMaxValueExceeded = true;
                             sensorState = TEMPERATURE_ERROR;
@@ -92,17 +97,35 @@ public class CoapCollector {
 
                 if (sensorState != -1) {
                     System.out.println("State has changed, sending POST request to the node with state=" + sensorState + " to " + alertClient.getURI());
-                    Request postRequest = new Request(Code.POST);
-                    postRequest.setPayload("state=" + sensorState);
-                    CoapResponse postResponse = alertClient.advanced(postRequest);
-                    //CoapResponse postResponse = alertClient.post("state=" + sensorState, MediaTypeRegistry.TEXT_PLAIN);
-                    if (postResponse.getCode() != ResponseCode.BAD_REQUEST) {
-                        if (Integer.parseInt(postResponse.getResponseText()) != sensorState) {
-                            System.err.println("Unable to change status on node with uri " + alertClient.getURI());
+                    alertClient.post(new CoapHandler() {
+
+                        @Override
+                        public void onLoad(CoapResponse response) {
+                            String message = response.getResponseText();
+                            ResponseCode code = response.getCode();
+                            if (code != ResponseCode.BAD_REQUEST) {
+                                int responseSensorState;
+                                try {
+                                    responseSensorState = Integer.parseInt(message);
+                                } catch (NumberFormatException e) {
+                                    responseSensorState = -1;
+                                }
+                                if (responseSensorState != sensorState){
+                                    System.err.println("Unable to change status on node with uri " + alertClient.getURI());
+                                } else {
+                                    System.err.println("Changed status to " + sensorState + " on node with uri " + alertClient.getURI());
+                                }
+                            } else {
+                                System.err.println("400 BAD REQUEST on node with uri " + alertClient.getURI());
+                            }
                         }
-                    } else {
-                        System.err.println("400 BAD REQUEST on node with uri " + alertClient.getURI());
-                    }
+
+                        @Override
+                        public void onError() {
+                            System.err.println("-Failed---");
+                        }
+                        
+                    }, "state=" + sensorState, MediaTypeRegistry.TEXT_PLAIN);
                 }
             }
 

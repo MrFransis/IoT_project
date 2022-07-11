@@ -3,7 +3,10 @@
 int
 sensor_rand_int(int min, int max)
 {
+<<<<<<< HEAD
   //printf("Performing measurement between %d and %d\n", min, max);
+=======
+>>>>>>> 269e8d2e002906113e3942d3af12b37716f09a15
   return ((rand() %(max - min + 1)) + min);
 }
 

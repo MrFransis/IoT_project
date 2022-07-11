@@ -40,12 +40,14 @@ extern coap_resource_t res_coolant;
 static void 
 sensors_emulation(process_event_t event, int sample)
 {
-  printf("Simulazione %d sample %d \n", event, sample);
   if (event == TEMPERATURE_SAMPLE_EVENT){
+    printf("New temperature measurement with value %d. Updating collector.\n", sample);
     res_temperature_update(sample, node_id);
   } else if (event == FUEL_LEVEL_SAMPLE_EVENT) {
+    printf("New fuel level measurement with value %d. Updating collector.\n", sample);
     res_fuel_level_update(sample, node_id);
   } else if (event == ENERGY_SAMPLE_EVENT) {
+    printf("New energy generated measurement with value %d. Updating collector.\n", sample);
     res_energy_generated_update(sample, node_id);
   }
 }
@@ -98,7 +100,6 @@ init_monitor()
 static bool
 sensor_event(process_event_t event)
 {
-  printf("Event %d, %d\n", event, TEMPERATURE_SAMPLE_EVENT);
   if(event == TEMPERATURE_SAMPLE_EVENT
       || event == FUEL_LEVEL_SAMPLE_EVENT
       || event == ENERGY_SAMPLE_EVENT) {

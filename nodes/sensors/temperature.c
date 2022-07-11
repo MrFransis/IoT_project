@@ -24,7 +24,7 @@ PROCESS_THREAD(temperature_sensor_process, ev, data)
   static bool alert;
   PROCESS_BEGIN();
 
-  printf("Temperature process started");
+  printf("Temperature process started\n");
 
   alert = OFF;
   TEMPERATURE_SAMPLE_EVENT = process_alloc_event();
@@ -40,7 +40,11 @@ PROCESS_THREAD(temperature_sensor_process, ev, data)
       }else if(alert == ON){
         sample -= 1;
       }
+<<<<<<< HEAD
       process_post_synch(subscriber, TEMPERATURE_SAMPLE_EVENT, &sample);
+=======
+      process_post(subscriber, TEMPERATURE_SAMPLE_EVENT, &sample);
+>>>>>>> 269e8d2e002906113e3942d3af12b37716f09a15
       etimer_reset(&et);
     }else if(ev == TEMPERATURE_EVENT_ALERT){
       alert = data;

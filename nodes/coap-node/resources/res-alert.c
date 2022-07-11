@@ -53,7 +53,7 @@ static void
 res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
 
   const char *value = NULL;
-  int state;
+  int state = -1;
   int success = 1;
 
   printf("POST request received from the Collector\n");

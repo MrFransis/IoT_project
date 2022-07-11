@@ -173,6 +173,7 @@ sensors_emulation(process_event_t event, int sample)
 static void
 load_sensors_processes()
 {
+
   process_start(&temperature_sensor_process, NULL);
   process_post(&temperature_sensor_process, TEMPERATURE_EVENT_SUB, &mqtt_client_process);
 

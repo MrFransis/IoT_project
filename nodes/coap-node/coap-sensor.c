@@ -7,13 +7,14 @@
 #include "coap-blocking-api.h"
 #include "os/sys/etimer.h"
 #include "os/net/ipv6/uip-ds6.h"
-#include "dev/etc/rgb-led/rgb-led.h"
+#include "os/dev/leds.h"
 #include "../sensors/energy-generated.h"
 #include "../sensors/fuel-level.h"
 #include "../sensors/temperature.h"
 #include "./resources/res-energy-generated.h"
 #include "./resources/res-fuel-level.h"
 #include "./resources/res-temperature.h"
+#include "./resources/res-alert.h"
 
 #define SENSOR_ID_LENGTH 10
 #define STATE_INIT    		  0
@@ -34,7 +35,10 @@ static int node_id;
  * Resources to be activated need to be imported through the extern keyword.
  * The build system automatically compiles the resources in the corresponding sub-directory.
  */
-extern coap_resource_t res_coolant; 
+extern coap_resource_t res_alert;
+extern coap_resource_t res_temperature;
+extern coap_resource_t res_fuel_level;
+extern coap_resource_t res_enery_generated;
 
 /*---------------------------------------------------------------------------*/
 static void 
@@ -62,6 +66,8 @@ client_chunk_handler(coap_message_t *response)
     return;
   }
 	state = COAP_MONITOR_STATE_OPERATIONAL;
+  leds_off(LEDS_RED | LEDS_GREEN);
+  leds_on(LEDS_BLUE);
   int len = coap_get_payload(response, &chunk);
   printf("|%.*s", len, (char *)chunk);
 }
@@ -83,6 +89,8 @@ init_monitor()
 {
   state = STATE_INIT;
 
+  leds_on(LEDS_RED | LEDS_GREEN);
+
   res_temperature_activate();
   process_start(&temperature_sensor_process, NULL);
   process_post(&temperature_sensor_process, TEMPERATURE_EVENT_SUB, &coap_server);
@@ -95,6 +103,7 @@ init_monitor()
   process_start(&energy_sensor_process, NULL);
   process_post(&energy_sensor_process, ENERGY_EVENT_SUB, &coap_server);
 
+  res_alert_activate();
 }
 
 static bool
@@ -131,7 +140,7 @@ PROCESS_THREAD(coap_server, ev, data)
     } 
 
     if(state == COAP_MONITOR_STATE_STARTED){
-			COAP_BLOCKING_REQUEST(&server, request, client_chunk_handler);  
+			COAP_BLOCKING_REQUEST(&server, request, client_chunk_handler);
     }
 
     if(sensor_event(ev) && state == COAP_MONITOR_STATE_OPERATIONAL){

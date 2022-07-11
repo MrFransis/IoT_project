@@ -31,7 +31,7 @@ res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buff
   char json_response[512];
   int length;
 
-  json_sample(json_response, 512, "fuel_level", fuel_level_sample, node_id);
+  json_sample(json_response, 512, "fuel_level", fuel_level_sample, "L", node_id);
   length = strlen(json_response);
   memcpy(buffer, json_response, length);
 

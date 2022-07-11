@@ -31,7 +31,7 @@ res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buff
   char json_response[512];
   int length;
 
-  json_sample(json_response, 512, "temperature", temperature_sample, node_id);
+  json_sample(json_response, 512, "temperature", temperature_sample, "C", node_id);
   length = strlen(json_response);
   memcpy(buffer, json_response, length);
 

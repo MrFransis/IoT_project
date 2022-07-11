@@ -23,10 +23,11 @@ public class CoapCollector {
     CoapClient alertClient;
     MysqlManager mysqlMan;
     CoapObserveRelation relation;
-    Boolean sensorMaxValueExceeded;
+    Boolean temperatureMaxValueExceeded;
+    Boolean fuelLevelMinValueExceeded;
     String resource;
 
-    public static final int FUEL_LEVEL_THRESHOLD = 800;
+    public static final int FUEL_LEVEL_THRESHOLD = 25;
     public static final int TEMPERATURE_THRESHOLD = 160;
 
     public static final int NO_ERROR = 0;
@@ -37,7 +38,9 @@ public class CoapCollector {
         client = new CoapClient(s.getUri());
         mysqlMan = new MysqlManager(MysqlDriver.getInstance().openConnection());
         alertClient = new CoapClient("coap://[" + s.getNodeIp() + "]/alert");
-        sensorMaxValueExceeded = false;
+        System.out.println(alertClient);
+        temperatureMaxValueExceeded = false;
+        fuelLevelMinValueExceeded = false;
         resource = s.getResourcePath();
     }
 
@@ -54,45 +57,51 @@ public class CoapCollector {
                 if (msg.getSample() == -1) {
                     return;
                 }
+                System.out.println("COAP SERVER - New measurement from " + client.getURI() + " on resource " + resource + ". Value is " + msg.getSample() + msg.getUnit());
+
                 mysqlMan.insertSample(msg);
                 
                 String topic = msg.getTopic();
                 int sample = msg.getSample();
-                Boolean currentMaxValueExceeded = false;
                 int sensorState = -1;
 
                 switch (topic) {
                     case "fuel_level":
-                        if (sample > FUEL_LEVEL_THRESHOLD) {
-                            currentMaxValueExceeded = true;
-                            sensorMaxValueExceeded = true;
+                        if (sample < FUEL_LEVEL_THRESHOLD) {
+                            System.out.println("Fuel level min threshold exceeded!");
+                            fuelLevelMinValueExceeded = true;
                             sensorState = FUEL_LEVEL_ERROR;
+                        } else if (fuelLevelMinValueExceeded){
+                            System.out.println("Fuel level value has returned to normal");
+                            fuelLevelMinValueExceeded = false;
                         }
                         break;
                     case "temperature":
-                        if (sample > TEMPERATURE_THRESHOLD) {
-                            currentMaxValueExceeded = true;
-                            sensorMaxValueExceeded = true;
+                        if (sample > 150) {
+                            System.out.println("Temperature max threshold exceeded!");
+                            temperatureMaxValueExceeded = true;
                             sensorState = TEMPERATURE_ERROR;
+                        } else if (temperatureMaxValueExceeded) {
+                            System.out.println("Temperature value has returned to normal");
+                            temperatureMaxValueExceeded = false;
+                            sensorState = NO_ERROR;
                         }
                     default:
                         break;
                 }
 
-                // sensor value has returned to normal
-                if (!currentMaxValueExceeded && sensorMaxValueExceeded) {
-                    sensorMaxValueExceeded = false;
-                    sensorState = NO_ERROR;
-                }
-
                 if (sensorState != -1) {
-                    CoapResponse postResponse = alertClient.post("state=" + sensorState, MediaTypeRegistry.TEXT_PLAIN);
+                    System.out.println("State has changed, sending POST request to the node with state=" + sensorState + " to " + alertClient.getURI());
+                    Request postRequest = new Request(Code.POST);
+                    postRequest.setPayload("state=" + sensorState);
+                    CoapResponse postResponse = alertClient.advanced(postRequest);
+                    //CoapResponse postResponse = alertClient.post("state=" + sensorState, MediaTypeRegistry.TEXT_PLAIN);
                     if (postResponse.getCode() != ResponseCode.BAD_REQUEST) {
                         if (Integer.parseInt(postResponse.getResponseText()) != sensorState) {
-                            System.err.println("Unable to change status on node with uri " + client.getURI());
+                            System.err.println("Unable to change status on node with uri " + alertClient.getURI());
                         }
                     } else {
-                        System.err.println("400 BAD REQUEST on node with uri " + client.getURI());
+                        System.err.println("400 BAD REQUEST on node with uri " + alertClient.getURI());
                     }
                 }
             }

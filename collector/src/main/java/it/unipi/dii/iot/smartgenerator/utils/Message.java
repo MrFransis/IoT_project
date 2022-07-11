@@ -7,7 +7,6 @@ public class Message {
     int v;
     String u;
     int id;
-    //Date timestamp; //va creato sul nodo?
 
     public String getTopic() {
         return n;

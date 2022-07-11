@@ -8,7 +8,7 @@
 #include "sys/ctimer.h"
 #include "lib/sensors.h"
 #include "dev/button-hal.h"
-#include "dev/etc/rgb-led/rgb-led.h"
+#include "os/dev/leds.h"
 #include "os/sys/log.h"
 #include "mqtt-sensor.h"
 #include "../sensors/energy-generated.h"
@@ -71,7 +71,9 @@ static char broker_address[CONFIG_IP_ADDR_STR_LEN];
 #define BUFFER_SIZE 64
 
 static char client_id[BUFFER_SIZE];
-static char pub_topic[BUFFER_SIZE];
+static char energy_topic[BUFFER_SIZE];
+static char fuel_topic[BUFFER_SIZE];
+static char temperature_topic[BUFFER_SIZE];
 static char sub_topic[BUFFER_SIZE];
 
 static int node_id;
@@ -86,7 +88,10 @@ static struct etimer periodic_timer;
  * We will need to increase if we start publishing more data.
  */
 #define APP_BUFFER_SIZE 512
-static char app_buffer[APP_BUFFER_SIZE];
+static char energy_buffer[APP_BUFFER_SIZE];
+static char fuel_buffer[APP_BUFFER_SIZE];
+static char temperature_buffer[APP_BUFFER_SIZE];
+//static char app_buffer[APP_BUFFER_SIZE];
 /*---------------------------------------------------------------------------*/
 static struct mqtt_message *msg_ptr = 0;
 
@@ -100,19 +105,23 @@ static void
 pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
             uint16_t chunk_len)
 {
-  printf("Pub Handler: topic='%s' (len=%u), chunk_len=%u\n", topic,
-          topic_len, chunk_len);
+  //printf("Pub Handler: topic='%s' (len=%u), chunk_len=%u\n", topic, topic_len, chunk_len);
   if(strcmp(topic, sub_topic) == 0) {
     printf("Received Actuator command\n");
 	  printf("%s\n", chunk);
     if(strcmp((const char *)chunk, "temperature")==0){
-      //rgb_led_set(RGB_LED_RED);
+      printf("Ricevuto alert temp\n");
+      leds_off(LEDS_BLUE);
+      leds_on(LEDS_RED);
       process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, (int*) ON);
     }else if (strcmp((const char *)chunk, "temperature_off")==0){
-      //rgb_led_set(RGB_LED_RED);
+      printf("Ricevuto OFF temp\n");
+      leds_off(LEDS_RED);
+      leds_on(LEDS_BLUE);
       process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, (int*) OFF);
-    }else if (strcmp((const char *)chunk, "fuel_lvl")==0){
-      //rgb_led_set(RGB_LED_BLUE);
+    }else if (strcmp((const char *)chunk, "fuel_level")==0){
+      printf("Ricevuto fuellvl temp\n");
+      leds_on(LEDS_LED2);
     }else{
         printf("UNKNOWN COMMAND\n");
     }
@@ -121,13 +130,12 @@ pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
 }
 /*---------------------------------------------------------------------------*/
 static void 
-publish(char* topic, int sample)
+publish(char* topic, char* buffer)
 {
-  sprintf(pub_topic, "%s", topic);
-  memset(app_buffer, 0, APP_BUFFER_SIZE);
-  json_sample(app_buffer, APP_BUFFER_SIZE, pub_topic, sample, node_id);
-  printf("%s \n", app_buffer);
-  /*int status = */mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer, strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
+  LOG_INFO("Publishing %s in the topic %s.\n", buffer, topic);
+  //sprintf(app_buffer, "%s", json_response);
+  //int status = 
+  mqtt_publish(&conn, NULL, topic, (uint8_t *)buffer, strlen(buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
   /*
   switch(status) {
   case MQTT_STATUS_OK:
@@ -151,11 +159,14 @@ static void
 sensors_emulation(process_event_t event, int sample)
 { 
   if(event == TEMPERATURE_SAMPLE_EVENT){
-    publish("temperature", sample);
+    json_sample(temperature_buffer, APP_BUFFER_SIZE, "temperature", sample, "C", node_id);
+    publish(temperature_topic, temperature_buffer);
   }else if(event == FUEL_LEVEL_SAMPLE_EVENT){
-    publish("fuel_level", sample);
+    json_sample(fuel_buffer, APP_BUFFER_SIZE, "fuel_level", sample, "L", node_id);
+    publish(fuel_topic, fuel_buffer);
   }else if(event == ENERGY_SAMPLE_EVENT){
-    publish("energy_generated", sample);
+    json_sample(energy_buffer, APP_BUFFER_SIZE, "energy_generated", sample, "W", node_id);
+    publish(energy_topic, energy_buffer);
   }
 }
 static void
@@ -267,7 +278,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
   load_sensors_processes();
   
   state=STATE_INIT;
-				    
+	leds_on(LEDS_RED | LEDS_GREEN);	    
   // Initialize periodic timer to check the status 
   etimer_set(&periodic_timer, STATE_MACHINE_PERIODIC);
 
@@ -300,7 +311,9 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
         char topic[64];
         sprintf(topic, "alarm_%d", node_id);
         strcpy(sub_topic,topic);
-
+        strcpy(energy_topic, "energy_generated");
+        strcpy(fuel_topic, "fuel_level");
+        strcpy(temperature_topic, "temperature");
 			  status = mqtt_subscribe(&conn, NULL, sub_topic, MQTT_QOS_LEVEL_0);
 
 			  printf("Subscribing!\n");
@@ -310,6 +323,8 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 			  }
 			  
 			  state = STATE_SUBSCRIBED;
+        leds_off(LEDS_RED | LEDS_GREEN);
+        leds_on(LEDS_BLUE);
 
 		  }else if ( state == STATE_DISCONNECTED ){
         LOG_ERR("Disconnected form MQTT broker\n");	
@@ -320,10 +335,10 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
       etimer_set(&periodic_timer, STATE_MACHINE_PERIODIC);
       
     }else if(sensor_event(ev) && state == STATE_SUBSCRIBED){
-      // Publish something
       sensors_emulation(ev, *((int *)data));
     }else if(ev == button_hal_press_event && state == STATE_SUBSCRIBED){
-      process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_REFILL, "");
+      leds_off(LEDS_LED2);
+      process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_REFILL, (int*) OFF);
     }
 
   }

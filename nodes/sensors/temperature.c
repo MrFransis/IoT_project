@@ -40,8 +40,7 @@ PROCESS_THREAD(temperature_sensor_process, ev, data)
       }else if(alert == ON){
         sample -= 1;
       }
-      printf("Sample %d\n", sample);
-      process_post(subscriber, TEMPERATURE_SAMPLE_EVENT, &sample);
+      process_post_synch(subscriber, TEMPERATURE_SAMPLE_EVENT, &sample);
       etimer_reset(&et);
     }else if(ev == TEMPERATURE_EVENT_ALERT){
       alert = data;

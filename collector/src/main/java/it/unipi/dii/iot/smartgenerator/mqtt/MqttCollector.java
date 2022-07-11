@@ -2,7 +2,9 @@ package it.unipi.dii.iot.smartgenerator.mqtt;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
@@ -43,7 +45,9 @@ public class MqttCollector implements MqttCallback{
             System.out.println("Connecting to broker: "+ broker);
             mqttClient.setCallback(this);
             mqttClient.connect();
-            mqttClient.subscribe(topic);    
+            mqttClient.subscribe("fuel_level");
+            mqttClient.subscribe("energy_generated");
+            mqttClient.subscribe("temperature");
         } catch (MqttException e) {
             e.printStackTrace();
         }
@@ -72,28 +76,35 @@ public class MqttCollector implements MqttCallback{
 
     public void messageArrived(String topic, MqttMessage message) throws Exception {
         //System.out.println(String.format("[%s] %s", topic, new String(message.getPayload())));
-        String jsonMessage = new String(message.getPayload());
-        Gson gson = new Gson();
-        Message msg = gson.fromJson(jsonMessage, Message.class);
-        mysqlMan.insertSample(msg);
-        switch(msg.getTopic()) {
-            case "temperature":
-                if(msg.getSample() > 160 && !tempWarningNodes.contains((Integer) msg.getMachineId())){
-                    publish("temperature", msg.getMachineId());
-                    tempWarningNodes.add((Integer) msg.getMachineId());
-                }else if(msg.getSample() < 160 && tempWarningNodes.contains((Integer) msg.getMachineId())){
-                    publish("temperature_off", msg.getMachineId());
-                    tempWarningNodes.remove((Integer) msg.getMachineId());
-                }
-                break;
-            case "fuel_level":
-                if(msg.getSample() < 25){
-                    publish("fuel_level", msg.getMachineId());
-                }
-                break;
-            default:
-                break;
-          }
+        try{
+            String jsonMessage = new String(message.getPayload());
+            Gson gson = new Gson();
+            Message msg = gson.fromJson(jsonMessage, Message.class);
+            mysqlMan.insertSample(msg); 
+            switch(msg.getTopic()) {
+                case "temperature":
+                    if(msg.getSample() > 160 && !tempWarningNodes.contains((Integer) msg.getMachineId())){
+                        publish("temperature", msg.getMachineId());
+                        tempWarningNodes.add((Integer) msg.getMachineId());
+                    }else if(msg.getSample() < 160 && tempWarningNodes.contains((Integer) msg.getMachineId())){
+                        System.out.println("Alert temperature OFFFFF");
+                        publish("temperature_off", msg.getMachineId());
+                        tempWarningNodes.remove((Integer) msg.getMachineId());
+                    }
+                    break;
+                case "fuel_level":
+                    if(msg.getSample() < 25){
+                        System.out.println("Alert fuel_level");
+                        publish("fuel_level", msg.getMachineId());
+                    }
+                    break;
+                default:
+                    break;
+              }   
+        }catch(Exception e){
+            System.out.println(e);
+        }
+         
 	}
 
 	public void deliveryComplete(IMqttDeliveryToken token) {

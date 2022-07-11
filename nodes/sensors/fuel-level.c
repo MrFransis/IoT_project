@@ -27,7 +27,6 @@ PROCESS_THREAD(fuel_level_sensor_process, ev, data)
   while(true){
     PROCESS_YIELD();
     if(etimer_expired(&et)){
-      printf("Fuel_level: %d \n", sample);
       if(sample > 0){
         sample -= 1;
       }

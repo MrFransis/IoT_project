@@ -38,7 +38,6 @@ static const char *broker_ip = MQTT_CLIENT_BROKER_IP_ADDR;
 // Defaukt config values
 #define DEFAULT_BROKER_PORT         1883
 #define DEFAULT_PUBLISH_INTERVAL    (30 * CLOCK_SECOND)
-#define KEEP_ALIVE                  0
 
 // We assume that the broker does not require authentication
 
@@ -92,7 +91,6 @@ static struct etimer periodic_timer;
 static char energy_buffer[APP_BUFFER_SIZE];
 static char fuel_buffer[APP_BUFFER_SIZE];
 static char temperature_buffer[APP_BUFFER_SIZE];
-//static char app_buffer[APP_BUFFER_SIZE];
 /*---------------------------------------------------------------------------*/
 static struct mqtt_message *msg_ptr = 0;
 
@@ -263,7 +261,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 {
 
   PROCESS_BEGIN();
-  //rgb_led_set(RGB_LED_GREEN);
+
   printf("MQTT Client Process\n");
   // Initialize the ClientID as MAC address
   snprintf(client_id, BUFFER_SIZE, "%02x%02x%02x%02x%02x%02x",

@@ -38,6 +38,7 @@ static const char *broker_ip = MQTT_CLIENT_BROKER_IP_ADDR;
 // Defaukt config values
 #define DEFAULT_BROKER_PORT         1883
 #define DEFAULT_PUBLISH_INTERVAL    (30 * CLOCK_SECOND)
+#define KEEP_ALIVE                  0
 
 // We assume that the broker does not require authentication
 
@@ -134,25 +135,27 @@ publish(char* topic, char* buffer)
 {
   LOG_INFO("Publishing %s in the topic %s.\n", buffer, topic);
   //sprintf(app_buffer, "%s", json_response);
-  //int status = 
-  mqtt_publish(&conn, NULL, topic, (uint8_t *)buffer, strlen(buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
-  /*
+  int status = mqtt_publish(&conn, NULL, topic, (uint8_t *)buffer, strlen(buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
+  
   switch(status) {
   case MQTT_STATUS_OK:
     return;
   case MQTT_STATUS_NOT_CONNECTED_ERROR: {
     printf("Publishing failed. Error: MQTT_STATUS_NOT_CONNECTED_ERROR.\n");
+    state = STATE_DISCONNECTED;
     return;
   }
   case MQTT_STATUS_OUT_QUEUE_FULL: {
     printf("Publishing failed. Error: MQTT_STATUS_OUT_QUEUE_FULL.\n");
-    break;
+    mqtt_disconnect(&conn);
+    state = STATE_DISCONNECTED;
+    return;
   }
   default:
     printf("Publishing failed. Error: unknown.\n");
     return;
   }
-  */
+  
 }
 
 static void 
@@ -300,9 +303,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 			  
 			  memcpy(broker_address, broker_ip, strlen(broker_ip));
 			  
-			  mqtt_connect(&conn, broker_address, DEFAULT_BROKER_PORT,
-						   (DEFAULT_PUBLISH_INTERVAL * 3) / CLOCK_SECOND,
-						   MQTT_CLEAN_SESSION_ON);
+			  mqtt_connect(&conn, broker_address, DEFAULT_BROKER_PORT, (DEFAULT_PUBLISH_INTERVAL * 3) / CLOCK_SECOND, MQTT_CLEAN_SESSION_ON);
 			  state = STATE_CONNECTING;
 		  }
 		  

@@ -1,16 +1,13 @@
 package it.unipi.dii.iot.smartgenerator.coap;
 
 import java.net.InetAddress;
-
-import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResource;
-import org.eclipse.californium.core.CoapResponse;
-import org.eclipse.californium.core.coap.Response;
-import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-
 import it.unipi.dii.iot.smartgenerator.utils.Sensor;
 
+/**
+ * Implements the CoapRegistration resource.
+ */
 public class CoapRegistration extends CoapResource{
 
     public CoapRegistration(String name) {
@@ -21,8 +18,7 @@ public class CoapRegistration extends CoapResource{
          
         exchange.accept();
         InetAddress sensorIp = exchange.getSourceAddress();
-        System.out.println(sensorIp);
-        //response?
+        System.out.println("Registration request from: " +sensorIp);
 
         Sensor temperatureSensor = new Sensor(sensorIp.getHostAddress(), "temperature");
         observe(temperatureSensor);

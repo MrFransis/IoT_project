@@ -1,27 +1,25 @@
 package it.unipi.dii.iot.smartgenerator.mqtt;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
-
 import it.unipi.dii.iot.smartgenerator.persistence.MysqlDriver;
 import it.unipi.dii.iot.smartgenerator.persistence.MysqlManager;
 import it.unipi.dii.iot.smartgenerator.utils.Message;
 import it.unipi.dii.iot.smartgenerator.utils.Utils;
 
+/**
+ * MQTT collector.
+ * It collects telemetry data saving them in a database,
+ * and send allert messages to nodes.
+ */
 public class MqttCollector implements MqttCallback{
     String topic;
     String broker;
@@ -29,8 +27,13 @@ public class MqttCollector implements MqttCallback{
     MqttClient mqttClient;
     MysqlManager mysqlMan;
     List<Integer> tempWarningNodes = new ArrayList<>();
-    List<Integer> coolantWarningNodes = new ArrayList<>();
-    
+    List<Integer> fuelWarningNodes = new ArrayList<>();;
+   
+    public static final int FUEL_LEVEL_THRESHOLD = 25;
+    public static final int TEMPERATURE_THRESHOLD = 160;
+    /**
+     * Creates a new MQTT collector.
+     */
     public MqttCollector(){
         Properties configurationParameters = Utils.readConfigurationParameters();
         topic = "#";
@@ -39,6 +42,9 @@ public class MqttCollector implements MqttCallback{
         mysqlMan = new MysqlManager(MysqlDriver.getInstance().openConnection());
     }
 
+    /**
+     * Starts the MQTT collector and subscribes to the topics of interest.
+     */
     public void start(){
         try {
             mqttClient = new MqttClient(broker, clientId);
@@ -61,10 +67,6 @@ public class MqttCollector implements MqttCallback{
         }
     }
 
-    public void connectionLost(Throwable cause) {
-		// TODO Auto-generated method stub
-	}
-
     public void publish(String content, int node){
         try{
             MqttMessage message = new MqttMessage(content.getBytes());
@@ -75,7 +77,6 @@ public class MqttCollector implements MqttCallback{
     }
 
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-        //System.out.println(String.format("[%s] %s", topic, new String(message.getPayload())));
         try{
             String jsonMessage = new String(message.getPayload());
             Gson gson = new Gson();
@@ -83,32 +84,46 @@ public class MqttCollector implements MqttCallback{
             mysqlMan.insertSample(msg); 
             switch(msg.getTopic()) {
                 case "temperature":
-                    if(msg.getSample() > 160 && !tempWarningNodes.contains((Integer) msg.getMachineId())){
+                    if(msg.getSample() > TEMPERATURE_THRESHOLD && !tempWarningNodes.contains((Integer) msg.getMachineId())){
+                        System.out.println("Temperature max threshold exceeded!");
+                        System.out.println("Sending allarm msg to node: " + msg.getMachineId());
                         publish("temperature", msg.getMachineId());
                         tempWarningNodes.add((Integer) msg.getMachineId());
-                    }else if(msg.getSample() < 160 && tempWarningNodes.contains((Integer) msg.getMachineId())){
-                        System.out.println("Alert temperature OFFFFF");
+                    }else if(msg.getSample() < TEMPERATURE_THRESHOLD && tempWarningNodes.contains((Integer) msg.getMachineId())){
+                        System.out.println("Temperature value has returned to normal");
                         publish("temperature_off", msg.getMachineId());
                         tempWarningNodes.remove((Integer) msg.getMachineId());
                     }
                     break;
                 case "fuel_level":
-                    if(msg.getSample() < 25){
-                        System.out.println("Alert fuel_level");
+                    if(msg.getSample() < FUEL_LEVEL_THRESHOLD && !fuelWarningNodes.contains((Integer) msg.getMachineId())){
+                        System.out.println("Temperature max threshold exceeded!");
+                        System.out.println("Sending allarm msg to node: " + msg.getMachineId());
                         publish("fuel_level", msg.getMachineId());
+                        fuelWarningNodes.add((Integer) msg.getMachineId());
+                    }else if(msg.getSample() < FUEL_LEVEL_THRESHOLD && fuelWarningNodes.contains((Integer) msg.getMachineId())){
+                        System.out.println("Temperature value has returned to normal");
+                        fuelWarningNodes.remove((Integer) msg.getMachineId());
                     }
                     break;
                 default:
                     break;
               }   
-        }catch(Exception e){
+        }catch(JsonParseException e){
             System.out.println(e);
         }
          
 	}
 
-	public void deliveryComplete(IMqttDeliveryToken token) {
-		// TODO Auto-generated method stub
-	}
+    @Override
+    public void connectionLost(Throwable cause) {
+        // TODO Auto-generated method stub
+        
+    }
 
+    @Override
+    public void deliveryComplete(IMqttDeliveryToken token) {
+        // TODO Auto-generated method stub
+        
+    }
 }

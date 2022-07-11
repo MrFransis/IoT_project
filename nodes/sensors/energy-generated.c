@@ -19,7 +19,9 @@ PROCESS_THREAD(energy_sensor_process, ev, data)
   static struct etimer etm;
 
   PROCESS_BEGIN();
+
   printf("Energy generator process started\n");
+  
   etimer_set(&etm, 6*CLOCK_SECOND);
   ENERGY_SAMPLE_EVENT = process_alloc_event();
   PROCESS_WAIT_EVENT_UNTIL(ev == ENERGY_EVENT_SUB);

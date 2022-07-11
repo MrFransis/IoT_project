@@ -1,25 +1,22 @@
 package it.unipi.dii.iot.smartgenerator.coap;
 
-import javax.xml.ws.Response;
-
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapObserveRelation;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.CoAP.*;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
-import org.eclipse.californium.core.coap.Request;
-
 import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
-
 import it.unipi.dii.iot.smartgenerator.persistence.MysqlDriver;
 import it.unipi.dii.iot.smartgenerator.persistence.MysqlManager;
 import it.unipi.dii.iot.smartgenerator.utils.Message;
-import it.unipi.dii.iot.smartgenerator.utils.NodeState;
 import it.unipi.dii.iot.smartgenerator.utils.Sensor;
-import it.unipi.dii.iot.smartgenerator.utils.Utils;
 
+/**
+ * CoAP collector.
+ * It collects telemetry data saving them in a database,
+ * and send allert messages to nodes.
+ */
 public class CoapCollector {
     CoapClient client;
     CoapClient alertClient;

@@ -19,7 +19,9 @@ PROCESS_THREAD(fuel_level_sensor_process, ev, data)
   static struct process *subscriber;
   static int sample;
   PROCESS_BEGIN();
+
   printf("Fuel level process started\n");
+  
   etimer_set(&etm, 3*CLOCK_SECOND);
   sample = sensor_rand_int(FUEL_LOWER_BOUND, FUEL_UPPER_BOUND);
   FUEL_LEVEL_SAMPLE_EVENT = process_alloc_event();

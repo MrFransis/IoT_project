@@ -104,7 +104,6 @@ static void
 pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
             uint16_t chunk_len)
 {
-  //printf("Pub Handler: topic='%s' (len=%u), chunk_len=%u\n", topic, topic_len, chunk_len);
   if(strcmp(topic, sub_topic) == 0) {
     printf("Received Actuator command\n");
 	  printf("%s\n", chunk);
@@ -132,7 +131,6 @@ static void
 publish(char* topic, char* buffer)
 {
   LOG_INFO("Publishing %s in the topic %s.\n", buffer, topic);
-  //sprintf(app_buffer, "%s", json_response);
   int status = mqtt_publish(&conn, NULL, topic, (uint8_t *)buffer, strlen(buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
   
   switch(status) {
@@ -170,6 +168,7 @@ sensors_emulation(process_event_t event, int sample)
     publish(energy_topic, energy_buffer);
   }
 }
+
 static void
 load_sensors_processes()
 {

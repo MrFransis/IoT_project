@@ -60,53 +60,47 @@ res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buf
 
   if (coap_get_post_variable(request, "state", &value)) {
     state = atoi(value);
-    printf("POST stateç %d\n", state);
-    if (state >= 0 && state < 3) {
-      if (state == COAP_NO_ERROR) {
-        printf("Riattivo sensori...\n");
-        int data = OFF;
-        if (temperature_state == TEMPERATURE_ERROR) {
-          process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, &data);
-          process_post(&energy_sensor_process, ENERGY_SAMPLE_EVENT, &data);
-        }
-        //rimetto led blu
-        leds_off(LEDS_RED);
-        leds_on(LEDS_BLUE);
-        printf("Led verde\n");
-        temperature_state = NO_TEMPERATURE_ERROR;
-      } else {
-        printf("Disattivo sensori e cambio colore ai led...\n");
-        int data = ON;
-        switch (state)
-        {
-        case COAP_TEMPERATURE_ERROR:
-          process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, &data);
-          process_post(&energy_sensor_process, ENERGY_SAMPLE_EVENT, &data);
-          leds_off(LEDS_BLUE);
-          leds_on(LEDS_RED);
-          printf("Led rosso\n");
-          temperature_state = TEMPERATURE_ERROR;
-          break;
-        case COAP_FUEL_LEVEL_ERROR:
-          leds_on(LEDS_LED2);
-          printf("Led secondario acceso\n");
-          break;
-        default:
-          break;
-        }
+    switch (state)
+    {
+    case COAP_NO_ERROR:
+      if (temperature_state == TEMPERATURE_ERROR) {
+        process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, (int*) OFF);
+        process_post(&energy_sensor_process, ENERGY_SAMPLE_EVENT, (int*) OFF);
       }
-    } else {
+      leds_off(LEDS_RED);
+      leds_on(LEDS_BLUE);
+      printf("Temperature value has returned to normal. Changing led color to blue\n");
+      temperature_state = NO_TEMPERATURE_ERROR;
+      break;
+    case COAP_TEMPERATURE_ERROR:
+      process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, (int*) ON);
+      process_post(&energy_sensor_process, ENERGY_SAMPLE_EVENT, (int*) ON);
+      leds_off(LEDS_BLUE);
+      leds_on(LEDS_RED);
+      printf("Temperature max threshold exceeded! Changing led color to red\n");
+      temperature_state = TEMPERATURE_ERROR;
+      break;
+    case COAP_FUEL_LEVEL_ERROR:
+      leds_on(LEDS_LED2);
+      printf("Fuel level min threshold exceeded! Activating secondary led\n");
+      break;
+    default:
       success = 0;
+      break;
     }
+  } else {
+    success = 0;
   }
 
   if(!success) {
     coap_set_status_code(response, BAD_REQUEST_4_00);
+    printf("400 BAD REQUEST\n");
   } else {
     char res[32] = "";
     snprintf(res, sizeof(res), "%d", state);
     int length = strlen(res);
     memcpy(buffer, res, length);
+    printf("Post request processed successfully\n");
     coap_set_header_content_format(response, TEXT_PLAIN);
     coap_set_header_etag(response, (uint8_t *)&length, 1);
     coap_set_payload(response, buffer, length);

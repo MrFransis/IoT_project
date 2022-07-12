@@ -26,11 +26,15 @@ public class MqttCollector implements MqttCallback{
     String clientId;
     MqttClient mqttClient;
     MysqlManager mysqlMan;
+    String loggingColor;
     List<Integer> tempWarningNodes = new ArrayList<>();
     List<Integer> fuelWarningNodes = new ArrayList<>();;
    
     public static final int FUEL_LEVEL_THRESHOLD = 25;
     public static final int TEMPERATURE_THRESHOLD = 160;
+
+    public static final String[] colors = {"\u001B[95m", "\u001B[96m"}; //purple, cyan
+    public static final String ANSI_RESET = "\u001B[0m";
     /**
      * Creates a new MQTT collector.
      */
@@ -38,7 +42,7 @@ public class MqttCollector implements MqttCallback{
         Properties configurationParameters = Utils.readConfigurationParameters();
         topic = "#";
         broker = "tcp://"+configurationParameters.getProperty("mqttBrokerIp")+":"+configurationParameters.getProperty("mqttBrokerPort");
-        clientId = "JavaCollecotr";
+        clientId = "JavaCollector";
         mysqlMan = new MysqlManager(MysqlDriver.getInstance().openConnection());
     }
 
@@ -81,28 +85,31 @@ public class MqttCollector implements MqttCallback{
             String jsonMessage = new String(message.getPayload());
             Gson gson = new Gson();
             Message msg = gson.fromJson(jsonMessage, Message.class);
-            mysqlMan.insertSample(msg); 
+
+            loggingColor = colors[msg.getMachineId()%colors.length];
+            printToConsole("New measurement from machine " + msg.getMachineId() + " on topic " + topic + ". Value is " + msg.getSample() + msg.getUnit());
+
+            mysqlMan.insertSample(msg);
+
             switch(msg.getTopic()) {
                 case "temperature":
                     if(msg.getSample() > TEMPERATURE_THRESHOLD && !tempWarningNodes.contains((Integer) msg.getMachineId())){
-                        System.out.println("Temperature max threshold exceeded!");
-                        System.out.println("Sending allarm msg to node: " + msg.getMachineId());
+                        printToConsole("Temperature max threshold exceeded! Sending alarm msg to node: " + msg.getMachineId());
                         publish("temperature", msg.getMachineId());
                         tempWarningNodes.add((Integer) msg.getMachineId());
                     }else if(msg.getSample() < TEMPERATURE_THRESHOLD && tempWarningNodes.contains((Integer) msg.getMachineId())){
-                        System.out.println("Temperature value has returned to normal");
+                        printToConsole("Temperature value has returned to normal");
                         publish("temperature_off", msg.getMachineId());
                         tempWarningNodes.remove((Integer) msg.getMachineId());
                     }
                     break;
                 case "fuel_level":
                     if(msg.getSample() < FUEL_LEVEL_THRESHOLD && !fuelWarningNodes.contains((Integer) msg.getMachineId())){
-                        System.out.println("Temperature max threshold exceeded!");
-                        System.out.println("Sending allarm msg to node: " + msg.getMachineId());
+                        printToConsole("Fuel level min threshold exceeded! Sending alarm msg to node: " + msg.getMachineId());
                         publish("fuel_level", msg.getMachineId());
                         fuelWarningNodes.add((Integer) msg.getMachineId());
                     }else if(msg.getSample() < FUEL_LEVEL_THRESHOLD && fuelWarningNodes.contains((Integer) msg.getMachineId())){
-                        System.out.println("Temperature value has returned to normal");
+                        printToConsole("Fuel level value has returned to normal");
                         fuelWarningNodes.remove((Integer) msg.getMachineId());
                     }
                     break;
@@ -125,5 +132,9 @@ public class MqttCollector implements MqttCallback{
     public void deliveryComplete(IMqttDeliveryToken token) {
         // TODO Auto-generated method stub
         
+    }
+
+    public void printToConsole(String log) {
+        System.out.println(loggingColor + "MQTT - " + log + ANSI_RESET);
     }
 }

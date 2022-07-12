@@ -1,5 +1,7 @@
 package it.unipi.dii.iot.smartgenerator.coap;
 
+import java.util.List;
+
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapObserveRelation;
@@ -27,6 +29,7 @@ public class CoapCollector {
     String resource;
     String nodeIp;
     int sensorState;
+    String loggingColor;
 
     public static final int FUEL_LEVEL_THRESHOLD = 25;
     public static final int TEMPERATURE_THRESHOLD = 160;
@@ -35,12 +38,14 @@ public class CoapCollector {
     public static final int FUEL_LEVEL_ERROR = 1;
     public static final int TEMPERATURE_ERROR = 2;
 
+    public static final String[] colors = {"\u001B[91m", "\u001B[92m", "\u001B[93m", "\u001B[94m"}; //red, green, yellow, blue
+    public static final String ANSI_RESET = "\u001B[0m";
+
     public CoapCollector(Sensor s){
         client = new CoapClient(s.getUri());
         nodeIp = s.getNodeIp();
         mysqlMan = new MysqlManager(MysqlDriver.getInstance().openConnection());
         alertClient = new CoapClient("coap://[" + s.getNodeIp() + "]/alert");
-        System.out.println(alertClient);
         temperatureMaxValueExceeded = false;
         fuelLevelMinValueExceeded = false;
         resource = s.getResourcePath();
@@ -59,8 +64,8 @@ public class CoapCollector {
                 if (msg.getSample() == -1) {
                     return;
                 }
-                System.out.println("COAP SERVER - New measurement from " + client.getURI() + " on resource " + resource + ". Value is " + msg.getSample() + msg.getUnit());
-
+                loggingColor = colors[msg.getMachineId()%colors.length];
+                printToConsole("New measurement from " + nodeIp + " on resource " + resource + ". Value is " + msg.getSample() + msg.getUnit());
                 mysqlMan.insertSample(msg);
                 
                 String topic = msg.getTopic();
@@ -70,21 +75,21 @@ public class CoapCollector {
                 switch (topic) {
                     case "fuel_level":
                         if (sample < FUEL_LEVEL_THRESHOLD) {
-                            System.out.println("Fuel level min threshold exceeded!");
+                            printToConsole("Fuel level min threshold exceeded!");
                             fuelLevelMinValueExceeded = true;
                             sensorState = FUEL_LEVEL_ERROR;
                         } else if (fuelLevelMinValueExceeded){
-                            System.out.println("Fuel level value has returned to normal");
+                            printToConsole("Fuel level value has returned to normal");
                             fuelLevelMinValueExceeded = false;
                         }
                         break;
                     case "temperature":
                         if (sample > TEMPERATURE_THRESHOLD) {
-                            System.out.println("Temperature max threshold exceeded!");
+                            printToConsole("Temperature max threshold exceeded!");
                             temperatureMaxValueExceeded = true;
                             sensorState = TEMPERATURE_ERROR;
                         } else if (temperatureMaxValueExceeded) {
-                            System.out.println("Temperature value has returned to normal");
+                            printToConsole("Temperature value has returned to normal");
                             temperatureMaxValueExceeded = false;
                             sensorState = NO_ERROR;
                         }
@@ -93,7 +98,7 @@ public class CoapCollector {
                 }
 
                 if (sensorState != -1) {
-                    System.out.println("State has changed, sending POST request to the node with state=" + sensorState + " to " + alertClient.getURI());
+                    printToConsole("State has changed, sending POST request to the node with state=" + sensorState + " to " + alertClient.getURI());
                     alertClient.post(new CoapHandler() {
 
                         @Override
@@ -108,18 +113,18 @@ public class CoapCollector {
                                     responseSensorState = -1;
                                 }
                                 if (responseSensorState != sensorState){
-                                    System.err.println("Unable to change status on node with uri " + alertClient.getURI());
+                                    printToConsole("Unable to change status on node with uri " + alertClient.getURI());
                                 } else {
-                                    System.err.println("Changed status to " + sensorState + " on node with uri " + alertClient.getURI());
+                                    printToConsole("Changed status to " + sensorState + " on node with uri " + alertClient.getURI());
                                 }
                             } else {
-                                System.err.println("400 BAD REQUEST on node with uri " + alertClient.getURI());
+                                printToConsole("400 BAD REQUEST on node with uri " + alertClient.getURI());
                             }
                         }
 
                         @Override
                         public void onError() {
-                            System.err.println("-Failed---");
+                            printToConsole("-Failed---");
                         }
                         
                     }, "state=" + sensorState, MediaTypeRegistry.TEXT_PLAIN);
@@ -134,5 +139,9 @@ public class CoapCollector {
 
     public void cancelObserving(){
         relation.proactiveCancel();
+    }
+
+    public void printToConsole(String log) {
+        System.out.println(loggingColor + "COAP - " + log + ANSI_RESET);
     }
 }

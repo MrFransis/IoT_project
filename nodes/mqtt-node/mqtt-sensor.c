@@ -112,11 +112,13 @@ pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
       leds_off(LEDS_BLUE);
       leds_on(LEDS_RED);
       process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, (int*) ON);
+      process_post(&energy_sensor_process, ENERGY_SAMPLE_EVENT, (int*) ON);
     }else if (strcmp((const char *)chunk, "temperature_off")==0){
       printf("Ricevuto OFF temp\n");
       leds_off(LEDS_RED);
       leds_on(LEDS_BLUE);
       process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, (int*) OFF);
+      process_post(&energy_sensor_process, ENERGY_SAMPLE_EVENT, (int*) OFF);
     }else if (strcmp((const char *)chunk, "fuel_level")==0){
       printf("Ricevuto fuellvl temp\n");
       leds_on(LEDS_LED2);

@@ -29,8 +29,8 @@ public class MqttCollector implements MqttCallback{
     List<Integer> tempWarningNodes = new ArrayList<>();
     List<Integer> fuelWarningNodes = new ArrayList<>();;
    
-    public static final int FUEL_LEVEL_THRESHOLD = 25;
-    public static final int TEMPERATURE_THRESHOLD = 160;
+    public static final int FUEL_LEVEL_THRESHOLD = 351;
+    public static final int TEMPERATURE_THRESHOLD = 95;
     /**
      * Creates a new MQTT collector.
      */

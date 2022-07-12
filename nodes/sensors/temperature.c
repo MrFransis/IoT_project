@@ -22,6 +22,7 @@ PROCESS_THREAD(temperature_sensor_process, ev, data)
   static struct process *subscriber;
   static int sample;
   static bool alert;
+
   PROCESS_BEGIN();
 
   printf("Temperature process started\n");
@@ -32,6 +33,7 @@ PROCESS_THREAD(temperature_sensor_process, ev, data)
 
   subscriber = (struct process *)data;
   etimer_set(&et, CLOCK_SECOND*TEMPERATURE_SAMPLING_INTERVAL);
+  
   while(true) {
     PROCESS_YIELD();
     if(etimer_expired(&et)){

@@ -28,8 +28,8 @@ public class CoapCollector {
     String nodeIp;
     int sensorState;
 
-    public static final int FUEL_LEVEL_THRESHOLD = 25;
-    public static final int TEMPERATURE_THRESHOLD = 160;
+    public static final int FUEL_LEVEL_THRESHOLD = 351;
+    public static final int TEMPERATURE_THRESHOLD = 95;
 
     public static final int NO_ERROR = 0;
     public static final int FUEL_LEVEL_ERROR = 1;

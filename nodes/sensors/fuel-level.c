@@ -33,7 +33,7 @@ PROCESS_THREAD(fuel_level_sensor_process, ev, data)
     PROCESS_YIELD();
     if(etimer_expired(&et)){
       if(sample > 0){
-        sample -= 1;
+        sample -= 150;
       }
       process_post(subscriber, FUEL_LEVEL_SAMPLE_EVENT, &sample);
       etimer_reset(&et);

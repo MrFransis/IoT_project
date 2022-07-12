@@ -67,6 +67,7 @@ res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buf
         int data = OFF;
         if (temperature_state == TEMPERATURE_ERROR) {
           process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, &data);
+          process_post(&energy_sensor_process, ENERGY_SAMPLE_EVENT, &data);
         }
         //rimetto led blu
         leds_off(LEDS_RED);
@@ -80,6 +81,7 @@ res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buf
         {
         case COAP_TEMPERATURE_ERROR:
           process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, &data);
+          process_post(&energy_sensor_process, ENERGY_SAMPLE_EVENT, &data);
           leds_off(LEDS_BLUE);
           leds_on(LEDS_RED);
           printf("Led rosso\n");

@@ -4,7 +4,7 @@ collector/target/
 nodes/coap-node/build/
 nodes/coap-node/coap-sensor.cooja
 nodes/mqtt-node/build/
-nodes/mqtt-node/mqtt-client.cooja
+nodes/mqtt-node/mqtt-sensor.cooja
 rpl-border-router/build
 rpl-border-router/border-router.cooja
 collector/JavaCollecotr-tcp1270011883/.lck

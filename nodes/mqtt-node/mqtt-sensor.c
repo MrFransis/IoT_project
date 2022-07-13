@@ -21,13 +21,12 @@
 
 #define OFF 0
 #define ON 1
+#define MQTT_NO_ERROR                 "0"
+#define MQTT_FUEL_LEVEL_ERROR         "1"
+#define MQTT_TEMPERATURE_ERROR        "2"
 /*---------------------------------------------------------------------------*/
 #define LOG_MODULE "mqtt-sensor"
-#ifdef MQTT_CLIENT_CONF_LOG_LEVEL
-#define LOG_LEVEL MQTT_CLIENT_CONF_LOG_LEVEL
-#else
-#define LOG_LEVEL LOG_LEVEL_DBG
-#endif
+#define LOG_LEVEL LOG_LEVEL_APP
 
 /*---------------------------------------------------------------------------*/
 /* MQTT broker address. */
@@ -105,25 +104,25 @@ pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
             uint16_t chunk_len)
 {
   if(strcmp(topic, sub_topic) == 0) {
-    printf("Received Actuator command\n");
-	  printf("%s\n", chunk);
-    if(strcmp((const char *)chunk, "temperature")==0){
-      printf("Ricevuto alert temp\n");
+    LOG_INFO("Received Actuator command\n");
+	  LOG_INFO("%s\n", chunk);
+    if(strcmp((const char *)chunk, MQTT_TEMPERATURE_ERROR)==0){
+      LOG_INFO("Ricevuto alert temp\n");
       leds_off(LEDS_BLUE);
       leds_on(LEDS_RED);
       process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, (int*) ON);
-      process_post(&energy_sensor_process, ENERGY_SAMPLE_EVENT, (int*) ON);
-    }else if (strcmp((const char *)chunk, "temperature_off")==0){
-      printf("Ricevuto OFF temp\n");
+      process_post(&energy_sensor_process, ENERGY_EVENT_ALERT, (int*) ON);
+    }else if (strcmp((const char *)chunk, MQTT_NO_ERROR)==0){
+      LOG_INFO("Ricevuto OFF temp\n");
       leds_off(LEDS_RED);
       leds_on(LEDS_BLUE);
       process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, (int*) OFF);
-      process_post(&energy_sensor_process, ENERGY_SAMPLE_EVENT, (int*) OFF);
-    }else if (strcmp((const char *)chunk, "fuel_level")==0){
-      printf("Ricevuto fuellvl temp\n");
+      process_post(&energy_sensor_process, ENERGY_EVENT_ALERT, (int*) OFF);
+    }else if (strcmp((const char *)chunk, MQTT_FUEL_LEVEL_ERROR)==0){
+      LOG_INFO("Ricevuto fuellvl temp\n");
       leds_on(LEDS_LED2);
     }else{
-        printf("UNKNOWN COMMAND\n");
+      LOG_INFO("UNKNOWN COMMAND\n");
     }
     return;
   }
@@ -139,18 +138,18 @@ publish(char* topic, char* buffer)
   case MQTT_STATUS_OK:
     return;
   case MQTT_STATUS_NOT_CONNECTED_ERROR: {
-    printf("Publishing failed. Error: MQTT_STATUS_NOT_CONNECTED_ERROR.\n");
+    LOG_ERR("Publishing failed. Error: MQTT_STATUS_NOT_CONNECTED_ERROR.\n");
     state = STATE_DISCONNECTED;
     return;
   }
   case MQTT_STATUS_OUT_QUEUE_FULL: {
-    printf("Publishing failed. Error: MQTT_STATUS_OUT_QUEUE_FULL.\n");
+    LOG_ERR("Publishing failed. Error: MQTT_STATUS_OUT_QUEUE_FULL.\n");
     mqtt_disconnect(&conn);
     state = STATE_DISCONNECTED;
     return;
   }
   default:
-    printf("Publishing failed. Error: unknown.\n");
+    LOG_ERR("Publishing failed. Error: unknown.\n");
     return;
   }
   
@@ -201,13 +200,13 @@ mqtt_event(struct mqtt_connection *m, mqtt_event_t event, void *data)
 {
   switch(event) {
   case MQTT_EVENT_CONNECTED: {
-    printf("Application has a MQTT connection\n");
+    LOG_INFO("Application has a MQTT connection\n");
 
     state = STATE_CONNECTED;
     break;
   }
   case MQTT_EVENT_DISCONNECTED: {
-    printf("MQTT Disconnect. Reason %u\n", *((mqtt_event_t *)data));
+    LOG_INFO("MQTT Disconnect. Reason %u\n", *((mqtt_event_t *)data));
 
     state = STATE_DISCONNECTED;
     process_poll(&mqtt_client_process);
@@ -225,25 +224,25 @@ mqtt_event(struct mqtt_connection *m, mqtt_event_t event, void *data)
     mqtt_suback_event_t *suback_event = (mqtt_suback_event_t *)data;
 
     if(suback_event->success) {
-      printf("Application is subscribed to topic successfully\n");
+      LOG_INFO("Application is subscribed to topic successfully\n");
     } else {
-      printf("Application failed to subscribe to topic (ret code %x)\n", suback_event->return_code);
+      LOG_INFO("Application failed to subscribe to topic (ret code %x)\n", suback_event->return_code);
     }
 #else
-    printf("Application is subscribed to topic successfully\n");
+    LOG_INFO("Application is subscribed to topic successfully\n");
 #endif
     break;
   }
   case MQTT_EVENT_UNSUBACK: {
-    printf("Application is unsubscribed to topic successfully\n");
+    LOG_INFO("Application is unsubscribed to topic successfully\n");
     break;
   }
   case MQTT_EVENT_PUBACK: {
-    printf("Publishing complete.\n");
+    LOG_INFO("Publishing complete.\n");
     break;
   }
   default:
-    printf("Application got a unhandled MQTT event: %i\n", event);
+    LOG_INFO("Application got a unhandled MQTT event: %i\n", event);
     break;
   }
 }
@@ -264,7 +263,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 
   PROCESS_BEGIN();
 
-  printf("MQTT Client Process\n");
+  LOG_INFO("MQTT Client Process\n");
   // Initialize the ClientID as MAC address
   snprintf(client_id, BUFFER_SIZE, "%02x%02x%02x%02x%02x%02x",
                      linkaddr_node_addr.u8[0], linkaddr_node_addr.u8[1],
@@ -299,7 +298,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 		  
 		  if(state == STATE_NET_OK){
 			  // Connect to MQTT server
-			  printf("Connecting!\n");
+			  LOG_INFO("Connecting!\n");
 			  
 			  memcpy(broker_address, broker_ip, strlen(broker_ip));
 			  
@@ -317,7 +316,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
         strcpy(temperature_topic, "temperature");
 			  status = mqtt_subscribe(&conn, NULL, sub_topic, MQTT_QOS_LEVEL_0);
 
-			  printf("Subscribing!\n");
+			  LOG_INFO("Subscribing!\n");
 			  if(status == MQTT_STATUS_OUT_QUEUE_FULL) {
 				  LOG_ERR("Tried to subscribe but command queue was full!\n");
 				  PROCESS_EXIT();

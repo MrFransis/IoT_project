@@ -6,6 +6,9 @@
 #include "./utils.h"
 #include <stdio.h>
 
+#define LOG_MODULE "sensor"
+#define LOG_LEVEL LOG_LEVEL_APP
+
 #define OFF 0
 #define ON 1
 
@@ -25,7 +28,7 @@ PROCESS_THREAD(temperature_sensor_process, ev, data)
 
   PROCESS_BEGIN();
 
-  printf("Temperature process started\n");
+  LOG_INFO("Temperature process started\n");
 
   alert = OFF;
   TEMPERATURE_SAMPLE_EVENT = process_alloc_event();

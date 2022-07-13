@@ -3,10 +3,14 @@
 #include <string.h>
 #include "coap-engine.h"
 #include "os/dev/leds.h"
+#include "os/sys/log.h"
 #include "../../sensors/utils.h"
 #include "../../sensors/energy-generated.h"
 #include "../../sensors/fuel-level.h"
 #include "../../sensors/temperature.h"
+
+#define LOG_MODULE "coap-sensor"
+#define LOG_LEVEL LOG_LEVEL_APP
 
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
@@ -56,7 +60,7 @@ res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buf
   int state = -1;
   int success = 1;
 
-  printf("POST request received from the Collector\n");
+  LOG_INFO("POST request received from the Collector\n");
 
   if (coap_get_post_variable(request, "state", &value)) {
     state = atoi(value);
@@ -65,24 +69,24 @@ res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buf
     case COAP_NO_ERROR:
       if (temperature_state == TEMPERATURE_ERROR) {
         process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, (int*) OFF);
-        process_post(&energy_sensor_process, ENERGY_SAMPLE_EVENT, (int*) OFF);
+        process_post(&energy_sensor_process, ENERGY_EVENT_ALERT, (int*) OFF);
       }
       leds_off(LEDS_RED);
       leds_on(LEDS_BLUE);
-      printf("Temperature value has returned to normal. Changing led color to blue\n");
+      LOG_INFO("Temperature value has returned to normal. Changing led color to blue\n");
       temperature_state = NO_TEMPERATURE_ERROR;
       break;
     case COAP_TEMPERATURE_ERROR:
       process_post(&temperature_sensor_process, TEMPERATURE_EVENT_ALERT, (int*) ON);
-      process_post(&energy_sensor_process, ENERGY_SAMPLE_EVENT, (int*) ON);
+      process_post(&energy_sensor_process, ENERGY_EVENT_ALERT, (int*) ON);
       leds_off(LEDS_BLUE);
       leds_on(LEDS_RED);
-      printf("Temperature max threshold exceeded! Changing led color to red\n");
+      LOG_INFO("Temperature max threshold exceeded! Changing led color to red\n");
       temperature_state = TEMPERATURE_ERROR;
       break;
     case COAP_FUEL_LEVEL_ERROR:
       leds_on(LEDS_LED2);
-      printf("Fuel level min threshold exceeded! Activating secondary led\n");
+      LOG_INFO("Fuel level min threshold exceeded! Activating secondary led\n");
       break;
     default:
       success = 0;
@@ -94,13 +98,13 @@ res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buf
 
   if(!success) {
     coap_set_status_code(response, BAD_REQUEST_4_00);
-    printf("400 BAD REQUEST\n");
+    LOG_DBG("400 BAD REQUEST\n");
   } else {
     char res[32] = "";
     snprintf(res, sizeof(res), "%d", state);
     int length = strlen(res);
     memcpy(buffer, res, length);
-    printf("Post request processed successfully\n");
+    LOG_DBG("Post request processed successfully\n");
     coap_set_header_content_format(response, TEXT_PLAIN);
     coap_set_header_etag(response, (uint8_t *)&length, 1);
     coap_set_payload(response, buffer, length);

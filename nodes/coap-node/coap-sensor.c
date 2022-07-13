@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "os/dev/serial-line.h"
+#include "os/sys/log.h"
 #include "contiki.h"
 #include "coap-engine.h"
 #include "coap-blocking-api.h"
@@ -16,6 +16,9 @@
 #include "./resources/res-fuel-level.h"
 #include "./resources/res-temperature.h"
 #include "./resources/res-alert.h"
+
+#define LOG_MODULE "coap-sensor"
+#define LOG_LEVEL LOG_LEVEL_APP
 
 #define SENSOR_ID_LENGTH 10
 #define STATE_INIT    		  0
@@ -46,13 +49,13 @@ static void
 sensors_emulation(process_event_t event, int sample)
 {
   if (event == TEMPERATURE_SAMPLE_EVENT){
-    printf("New temperature measurement with value %d. Updating collector.\n", sample);
+    LOG_INFO("New temperature measurement with value %d. Updating collector.\n", sample);
     res_temperature_update(sample, node_id);
   } else if (event == FUEL_LEVEL_SAMPLE_EVENT) {
-    printf("New fuel level measurement with value %d. Updating collector.\n", sample);
+    LOG_INFO("New fuel level measurement with value %d. Updating collector.\n", sample);
     res_fuel_level_update(sample, node_id);
   } else if (event == ENERGY_SAMPLE_EVENT) {
-    printf("New energy generated measurement with value %d. Updating collector.\n", sample);
+    LOG_INFO("New energy generated measurement with value %d. Updating collector.\n", sample);
     res_energy_generated_update(sample, node_id);
   }
 }
@@ -70,7 +73,7 @@ client_chunk_handler(coap_message_t *response)
   leds_off(LEDS_RED | LEDS_GREEN);
   leds_on(LEDS_BLUE);
   int len = coap_get_payload(response, &chunk);
-  printf("|%.*s", len, (char *)chunk);
+  LOG_INFO("|%.*s", len, (char *)chunk);
 }
 
 static bool

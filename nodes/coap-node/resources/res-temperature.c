@@ -2,8 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include "coap-engine.h"
+#include "os/sys/log.h"
 #include "./res-temperature.h"
 #include "../../sensors/utils.h"
+
+#define LOG_MODULE "coap-sensor"
+#define LOG_LEVEL LOG_LEVEL_APP
 
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void res_event_handler(void);

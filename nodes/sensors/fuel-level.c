@@ -6,6 +6,9 @@
 #include "./utils.h"
 #include <stdio.h>
 
+#define LOG_MODULE "sensor"
+#define LOG_LEVEL LOG_LEVEL_APP
+
 process_event_t FUEL_LEVEL_SAMPLE_EVENT;
 process_event_t FUEL_LEVEL_EVENT_SUB;
 process_event_t FUEL_LEVEL_EVENT_REFILL;
@@ -20,7 +23,7 @@ PROCESS_THREAD(fuel_level_sensor_process, ev, data)
   static int sample;
   PROCESS_BEGIN();
 
-  printf("Fuel level process started\n");
+  LOG_INFO("Fuel level process started\n");
   
   etimer_set(&etm, 3*CLOCK_SECOND);
   sample = sensor_rand_int(FUEL_LOWER_BOUND, FUEL_UPPER_BOUND);
@@ -32,8 +35,8 @@ PROCESS_THREAD(fuel_level_sensor_process, ev, data)
   while(true){
     PROCESS_YIELD();
     if(etimer_expired(&et)){
-      if(sample > 0){
-        sample -= 150;
+      if(sample > 101){
+        sample -= 100;
       }
       process_post(subscriber, FUEL_LEVEL_SAMPLE_EVENT, &sample);
       etimer_reset(&et);

@@ -40,6 +40,7 @@
           },
           "mappings": [],
           "max": 800,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -89,7 +90,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  timestamp AS \"time\",\n  sample\nFROM fuel_level\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 167 OR\n  machineid = 2\nORDER BY timestamp",
+          "rawSql": "SELECT\n  $__time(timestamp),\n  sample\nFROM fuel_level\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 167 OR\n  machineid = 2\nORDER BY timestamp",
           "refId": "A",
           "select": [
             [
@@ -187,8 +188,8 @@
           "group": [],
           "hide": false,
           "metricColumn": "none",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  timestamp AS \"time\",\n  sample\nFROM energy_generated\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 167 OR\n  machineid = 2\nORDER BY timestamp",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__time(timestamp),\n  sample\nFROM energy_generated\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 167 OR\n  machineid = 2\nORDER BY timestamp",
           "refId": "A",
           "select": [
             [
@@ -238,6 +239,7 @@
           },
           "mappings": [],
           "max": 800,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -286,8 +288,8 @@
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  timestamp AS \"time\",\n  sample\nFROM fuel_level\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 248 OR\n  machineid = 3\nORDER BY timestamp",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__time(timestamp),\n  sample\nFROM fuel_level\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 248 OR\n  machineid = 3\nORDER BY timestamp",
           "refId": "A",
           "select": [
             [
@@ -386,7 +388,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  timestamp AS \"time\",\n  sample\nFROM energy_generated\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 248 OR\n  machineid = 3\nORDER BY timestamp",
+          "rawSql": "SELECT\n  $__time(timestamp),\n  sample\nFROM energy_generated\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 248 OR\n  machineid = 3\nORDER BY timestamp",
           "refId": "A",
           "select": [
             [
@@ -436,6 +438,7 @@
           },
           "mappings": [],
           "max": 800,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -485,7 +488,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  timestamp AS \"time\",\n  sample\nFROM fuel_level\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 174 OR\n  machineid = 4\nORDER BY timestamp",
+          "rawSql": "SELECT\n  $__time(timestamp),\n  sample\nFROM fuel_level\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 174 OR\n  machineid = 4\nORDER BY timestamp",
           "refId": "A",
           "select": [
             [
@@ -584,7 +587,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  timestamp AS \"time\",\n  sample\nFROM energy_generated\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 174 OR\n  machineid = 4\nORDER BY timestamp",
+          "rawSql": "SELECT\n  $__time(timestamp),\n  sample\nFROM energy_generated\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 174 OR\n  machineid = 4\nORDER BY timestamp",
           "refId": "A",
           "select": [
             [
@@ -653,7 +656,7 @@
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -664,6 +667,8 @@
             }
           },
           "mappings": [],
+          "max": 105,
+          "min": 85,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -709,8 +714,8 @@
           "group": [],
           "hide": false,
           "metricColumn": "unit",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  timestamp AS \"time\",\n  unit AS metric,\n  sample\nFROM temperature\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 167 OR\n  machineid = 2\nORDER BY timestamp",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__time(timestamp),\n  unit AS metric,\n  sample\nFROM temperature\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 167 OR\n  machineid = 2\nORDER BY timestamp",
           "refId": "A",
           "select": [
             [
@@ -779,7 +784,7 @@
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -790,6 +795,8 @@
             }
           },
           "mappings": [],
+          "max": 105,
+          "min": 85,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -836,7 +843,7 @@
           "hide": false,
           "metricColumn": "unit",
           "rawQuery": true,
-          "rawSql": "SELECT\n  timestamp AS \"time\",\n  unit AS metric,\n  sample\nFROM temperature\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 167 OR\n  machineid = 3\nORDER BY timestamp",
+          "rawSql": "SELECT\n  $__time(timestamp),\n  unit AS metric,\n  sample\nFROM temperature\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 167 OR\n  machineid = 3\nORDER BY timestamp",
           "refId": "A",
           "select": [
             [
@@ -905,7 +912,7 @@
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -916,6 +923,8 @@
             }
           },
           "mappings": [],
+          "max": 105,
+          "min": 85,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -962,7 +971,7 @@
           "hide": false,
           "metricColumn": "unit",
           "rawQuery": true,
-          "rawSql": "SELECT\n  timestamp AS \"time\",\n  unit AS metric,\n  sample\nFROM temperature\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 174 OR\n  machineid = 3\nORDER BY timestamp",
+          "rawSql": "SELECT\n  $__time(timestamp),\n  unit AS metric,\n  sample\nFROM temperature\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 174 OR\n  machineid = 3\nORDER BY timestamp",
           "refId": "A",
           "select": [
             [
@@ -1012,6 +1021,7 @@
           },
           "mappings": [],
           "max": 800,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1061,7 +1071,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  timestamp AS \"time\",\n  sample\nFROM fuel_level\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 186 OR\n  machineid = 5\nORDER BY timestamp",
+          "rawSql": "SELECT\n  $__time(timestamp),\n  sample\nFROM fuel_level\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 186 OR\n  machineid = 5\nORDER BY timestamp",
           "refId": "A",
           "select": [
             [
@@ -1160,7 +1170,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  timestamp AS \"time\",\n  sample\nFROM energy_generated\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 186 OR\n  machineid = 5\nORDER BY timestamp",
+          "rawSql": "SELECT\n  $__time(timestamp),\n  sample\nFROM energy_generated\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 186 OR\n  machineid = 5\nORDER BY timestamp",
           "refId": "A",
           "select": [
             [
@@ -1210,6 +1220,7 @@
           },
           "mappings": [],
           "max": 800,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1259,7 +1270,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  timestamp AS \"time\",\n  sample\nFROM fuel_level\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 193 OR\n  machineid = 6\nORDER BY timestamp",
+          "rawSql": "SELECT\n  $__time(timestamp),\n  sample\nFROM fuel_level\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 193 OR\n  machineid = 6\nORDER BY timestamp",
           "refId": "A",
           "select": [
             [
@@ -1358,7 +1369,7 @@
           "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  timestamp AS \"time\",\n  sample\nFROM energy_generated\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 193 OR\n  machineid = 6\nORDER BY timestamp",
+          "rawSql": "SELECT\n  $__time(timestamp),\n  sample\nFROM energy_generated\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 193 OR\n  machineid = 6\nORDER BY timestamp",
           "refId": "A",
           "select": [
             [
@@ -1412,7 +1423,7 @@
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 0,
-            "gradientMode": "none",
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
@@ -1427,7 +1438,7 @@
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1438,6 +1449,8 @@
             }
           },
           "mappings": [],
+          "max": 105,
+          "min": 85,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1484,7 +1497,7 @@
           "hide": false,
           "metricColumn": "unit",
           "rawQuery": true,
-          "rawSql": "SELECT\n  timestamp AS \"time\",\n  unit AS metric,\n  sample\nFROM temperature\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 186 OR\n  machineid = 5\nORDER BY timestamp",
+          "rawSql": "SELECT\n  $__time(timestamp),\n  unit AS metric,\n  sample\nFROM temperature\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 186 OR\n  machineid = 5\nORDER BY timestamp",
           "refId": "A",
           "select": [
             [
@@ -1553,7 +1566,7 @@
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1564,6 +1577,8 @@
             }
           },
           "mappings": [],
+          "max": 105,
+          "min": 85,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1610,7 +1625,7 @@
           "hide": false,
           "metricColumn": "unit",
           "rawQuery": true,
-          "rawSql": "SELECT\n  timestamp AS \"time\",\n  unit AS metric,\n  sample\nFROM temperature\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 193 OR\n  machineid = 6\nORDER BY timestamp",
+          "rawSql": "SELECT\n  $__time(timestamp),\n  unit AS metric,\n  sample\nFROM temperature\nWHERE\n  $__timeFilter(timestamp) AND\n  machineid = 193 OR\n  machineid = 6\nORDER BY timestamp",
           "refId": "A",
           "select": [
             [
@@ -1657,13 +1672,13 @@
     "list": []
   },
   "time": {
-    "from": "now-12h",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "Europe/Rome",
   "title": "SmartGenerators",
   "uid": "2e-vuwenz",
-  "version": 6,
+  "version": 8,
   "weekStart": ""
 }

@@ -30,8 +30,11 @@ public class MqttCollector implements MqttCallback{
     List<Integer> tempWarningNodes = new ArrayList<>();
     List<Integer> fuelWarningNodes = new ArrayList<>();;
    
-    public static final int FUEL_LEVEL_THRESHOLD = 351;
+    public static final int FUEL_LEVEL_THRESHOLD = 251;
     public static final int TEMPERATURE_THRESHOLD = 95;
+    public static final String NO_ERROR = "0";
+    public static final String FUEL_LEVEL_ERROR = "1";
+    public static final String TEMPERATURE_ERROR = "2";
 
     public static final String[] colors = {"\u001B[95m", "\u001B[96m"}; //purple, cyan
     public static final String ANSI_RESET = "\u001B[0m";
@@ -95,20 +98,20 @@ public class MqttCollector implements MqttCallback{
                 case "temperature":
                     if(msg.getSample() > TEMPERATURE_THRESHOLD && !tempWarningNodes.contains((Integer) msg.getMachineId())){
                         printToConsole("Temperature max threshold exceeded! Sending alarm msg to node: " + msg.getMachineId());
-                        publish("temperature", msg.getMachineId());
+                        publish(TEMPERATURE_ERROR, msg.getMachineId());
                         tempWarningNodes.add((Integer) msg.getMachineId());
                     }else if(msg.getSample() < TEMPERATURE_THRESHOLD && tempWarningNodes.contains((Integer) msg.getMachineId())){
                         printToConsole("Temperature value has returned to normal");
-                        publish("temperature_off", msg.getMachineId());
+                        publish(NO_ERROR, msg.getMachineId());
                         tempWarningNodes.remove((Integer) msg.getMachineId());
                     }
                     break;
                 case "fuel_level":
                     if(msg.getSample() < FUEL_LEVEL_THRESHOLD && !fuelWarningNodes.contains((Integer) msg.getMachineId())){
                         printToConsole("Fuel level min threshold exceeded! Sending alarm msg to node: " + msg.getMachineId());
-                        publish("fuel_level", msg.getMachineId());
+                        publish(FUEL_LEVEL_ERROR, msg.getMachineId());
                         fuelWarningNodes.add((Integer) msg.getMachineId());
-                    }else if(msg.getSample() < FUEL_LEVEL_THRESHOLD && fuelWarningNodes.contains((Integer) msg.getMachineId())){
+                    }else if(msg.getSample() > FUEL_LEVEL_THRESHOLD && fuelWarningNodes.contains((Integer) msg.getMachineId())){
                         printToConsole("Fuel level value has returned to normal");
                         fuelWarningNodes.remove((Integer) msg.getMachineId());
                     }

@@ -43,4 +43,7 @@
 #define UIP_CONF_TCP 1
 #endif
 
+#undef IEEE802154_CONF_PANID
+#define IEEE802154_CONF_PANID 0x0021
+
 #endif /* PROJECT_CONF_H_ */

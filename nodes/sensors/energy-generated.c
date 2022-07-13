@@ -6,11 +6,15 @@
 #include "./utils.h"
 #include <stdio.h>
 
+#define LOG_MODULE "sensor"
+#define LOG_LEVEL LOG_LEVEL_APP
+
 #define OFF 0
 #define ON 1
 
 process_event_t ENERGY_SAMPLE_EVENT;
 process_event_t ENERGY_EVENT_SUB;
+process_event_t ENERGY_EVENT_ALERT;
 
 PROCESS(energy_sensor_process, "Energy sensor process");
 
@@ -24,7 +28,7 @@ PROCESS_THREAD(energy_sensor_process, ev, data)
 
   PROCESS_BEGIN();
 
-  printf("Energy generator process started\n");
+  LOG_INFO("Energy generator process started\n");
 
   alert = OFF;
   etimer_set(&etm, 6*CLOCK_SECOND);

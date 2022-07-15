@@ -23,6 +23,9 @@ The repository is organized as follows:
 - Download the project into the *contiki-ng/examples* folder
 - Import the grafana dashboard *SmartGenerators-grafana.json*
 - Run MySql database and MQTT broker
+ ### Database
+- Create the database with *CREATE DATABASE smartgenerator;*
+- Import *smartgenerators_dump.sql*
  ### Collector
 - In the collector folder, compile the collector : *mvn clean install package*
 - and run the application : *java -jar target/collector.iot.unipi.it-0.0.1-SNAPSHOT.jar*

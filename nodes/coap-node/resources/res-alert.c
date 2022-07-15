@@ -12,7 +12,6 @@
 #define LOG_MODULE "coap-sensor"
 #define LOG_LEVEL LOG_LEVEL_APP
 
-static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 
 /*---------------------------------------------------------------------------*/
@@ -36,22 +35,10 @@ static uint8_t temperature_state;
 
 RESOURCE(res_alert,
         "title =\"Alert\" POST/PUTstate=<state>;rt=\"Control\"",
-        res_get_handler,
+        NULL,
         res_post_handler,
         res_post_handler,
         NULL);
-
-static void 
-res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
-
-  char res[32] = "";
-  snprintf(res, sizeof(res), "%d", temperature_state);
-  int length = strlen(res);
-  memcpy(buffer, res, length);
-  coap_set_header_content_format(response, TEXT_PLAIN);
-  coap_set_header_etag(response, (uint8_t *)&length, 1);
-  coap_set_payload(response, buffer, length);
-}
 
 static void
 res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {

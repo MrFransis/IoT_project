@@ -16,10 +16,12 @@ The repository is organized as follows:
 - Eclipse Mosquitto MQTT broker
 - MySQL database
 - Contiki NG - https://github.com/contiki-ng/contiki-ng/ with Cooja simulator to run the simulation
+- Grafana
 
 ## Run the project
 
 - Download the project into the *contiki-ng/examples* folder
+- Import the grafana dashboard *SmartGenerators-grafana.json*
 - Run MySql database and MQTT broker
  ### Collector
 - In the collector folder, compile the collector : *mvn clean install package*

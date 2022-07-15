@@ -28,7 +28,7 @@ public class MqttCollector implements MqttCallback{
     MysqlManager mysqlMan;
     String loggingColor;
     List<Integer> tempWarningNodes = new ArrayList<>();
-    List<Integer> fuelWarningNodes = new ArrayList<>();;
+    List<Integer> fuelWarningNodes = new ArrayList<>();
    
     public static final int FUEL_LEVEL_THRESHOLD = 251;
     public static final int TEMPERATURE_THRESHOLD = 95;

@@ -74,21 +74,21 @@ public class CoapCollector {
 
                 switch (topic) {
                     case "fuel_level":
-                        if (!fuelLevelMinValueExceeded && sample < FUEL_LEVEL_THRESHOLD) {
+                        if (sample < FUEL_LEVEL_THRESHOLD) {
                             printToConsole("Fuel level min threshold exceeded!");
                             fuelLevelMinValueExceeded = true;
                             sensorState = FUEL_LEVEL_ERROR;
-                        } else if (fuelLevelMinValueExceeded && sample > FUEL_LEVEL_THRESHOLD){
+                        } else if (fuelLevelMinValueExceeded){
                             printToConsole("Fuel level value has returned to normal");
                             fuelLevelMinValueExceeded = false;
                         }
                         break;
                     case "temperature":
-                        if (!temperatureMaxValueExceeded && sample > TEMPERATURE_THRESHOLD) {
+                        if (sample > TEMPERATURE_THRESHOLD) {
                             printToConsole("Temperature max threshold exceeded!");
                             temperatureMaxValueExceeded = true;
                             sensorState = TEMPERATURE_ERROR;
-                        } else if (temperatureMaxValueExceeded && sample < TEMPERATURE_THRESHOLD) {
+                        } else if (temperatureMaxValueExceeded) {
                             printToConsole("Temperature value has returned to normal");
                             temperatureMaxValueExceeded = false;
                             sensorState = NO_ERROR;

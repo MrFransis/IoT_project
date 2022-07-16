@@ -1,6 +1,9 @@
 package it.unipi.dii.iot.smartgenerator.coap;
 
+import java.net.InetAddress;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
@@ -55,7 +58,7 @@ public class CoapCollector {
         System.err.println("-Failed---");
     }
 
-    public void startObserving(){
+    public void startObserving(Map<String, HashSet<String>> registeredNodes){
             relation = client.observe(new CoapHandler() {
             public void onLoad(CoapResponse response) {
                 String jsonMessage = new String(response.getResponseText());
@@ -132,7 +135,12 @@ public class CoapCollector {
             }
 
             public void onError() {
-                System.err.println("-Failed---");
+                System.err.println(colors[0] + "---CoapCollector for node " + nodeIp + " on resource " + resource + " failed---" + ANSI_RESET);
+                registeredNodes.get(resource).remove(nodeIp);
+                for (String node : registeredNodes.get(resource)) {
+                    System.out.print(node);
+                }
+                client.shutdown();
             }
         });
     }

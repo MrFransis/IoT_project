@@ -86,10 +86,6 @@ have_connectivity(void)
   return true;
 }
 
-// Periodic timer to check the state of the MQTT client
-#define COAP_PERIODIC_CHECK   (10 * CLOCK_SECOND)
-static struct etimer periodic_timer;
-
 PROCESS(coap_server, "Coap Server");
 
 static void
@@ -149,20 +145,13 @@ PROCESS_THREAD(coap_server, ev, data)
 
     if(state == COAP_MONITOR_STATE_STARTED){
 			COAP_BLOCKING_REQUEST(&server, request, client_chunk_handler);
-      etimer_set(&periodic_timer, COAP_PERIODIC_CHECK);
     }
 
-    if (state == COAP_MONITOR_STATE_OPERATIONAL) {
-      if(sensor_event(ev)){
-        sensors_emulation(ev, *((int *)data));
-      } else if(ev == button_hal_press_event){
-        leds_off(LEDS_LED2);
-        process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_REFILL, NULL);
-      } else if(etimer_expired(&periodic_timer)) {
-        printf("Checking CoAP connection \n");
-        COAP_BLOCKING_REQUEST(&server, request, client_chunk_handler);
-        etimer_reset(&periodic_timer);
-      }
+    if(sensor_event(ev) && state == COAP_MONITOR_STATE_OPERATIONAL){
+      sensors_emulation(ev, *((int *)data));
+    } else if(ev == button_hal_press_event && state == COAP_MONITOR_STATE_OPERATIONAL){
+      leds_off(LEDS_LED2);
+      process_post(&fuel_level_sensor_process, FUEL_LEVEL_EVENT_REFILL, NULL);
     }
   }                             
 

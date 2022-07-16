@@ -100,7 +100,7 @@ public class MqttCollector implements MqttCallback{
                         printToConsole("Temperature max threshold exceeded! Sending alarm msg to node: " + msg.getMachineId());
                         publish(TEMPERATURE_ERROR, msg.getMachineId());
                         tempWarningNodes.add((Integer) msg.getMachineId());
-                    }else if(msg.getSample() < TEMPERATURE_THRESHOLD && tempWarningNodes.contains((Integer) msg.getMachineId())){
+                    }else if(msg.getSample() <= TEMPERATURE_THRESHOLD && tempWarningNodes.contains((Integer) msg.getMachineId())){
                         printToConsole("Temperature value has returned to normal");
                         publish(NO_ERROR, msg.getMachineId());
                         tempWarningNodes.remove((Integer) msg.getMachineId());
@@ -111,7 +111,7 @@ public class MqttCollector implements MqttCallback{
                         printToConsole("Fuel level min threshold exceeded! Sending alarm msg to node: " + msg.getMachineId());
                         publish(FUEL_LEVEL_ERROR, msg.getMachineId());
                         fuelWarningNodes.add((Integer) msg.getMachineId());
-                    }else if(msg.getSample() > FUEL_LEVEL_THRESHOLD && fuelWarningNodes.contains((Integer) msg.getMachineId())){
+                    }else if(msg.getSample() >= FUEL_LEVEL_THRESHOLD && fuelWarningNodes.contains((Integer) msg.getMachineId())){
                         printToConsole("Fuel level value has returned to normal");
                         fuelWarningNodes.remove((Integer) msg.getMachineId());
                     }
